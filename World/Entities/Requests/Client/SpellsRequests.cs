@@ -1,0 +1,64 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using MySql.Data.MySqlClient;
+
+namespace SunDofus.World.Entities.Requests
+{
+    class SpellsRequests
+    {
+        public static List<Entities.Models.Spells.SpellModel> SpellsList = new List<Entities.Models.Spells.SpellModel>();
+        public static List<Entities.Models.Spells.SpellToLearnModel> SpellsToLearnList = new List<Entities.Models.Spells.SpellToLearnModel>();
+
+        public static void LoadSpells()
+        {
+            var connection = DatabaseProvider.CreateConnection();
+            var sqlText = "SELECT * FROM spells";
+            var sqlCommand = new MySqlCommand(sqlText, connection);
+
+            var sqlReader = sqlCommand.ExecuteReader();
+
+            while (sqlReader.Read())
+            {
+                var spell = new Entities.Models.Spells.SpellModel()
+                {
+                    ID = sqlReader.GetInt16("id"),
+                    Sprite = sqlReader.GetInt16("sprite"),
+                    SpriteInfos = sqlReader.GetString("spriteInfos"),
+                };
+
+                for (int i = 1; i <= 6; i++)
+                    spell.ParseLevel(sqlReader.GetString("lvl" + i), i);
+
+                SpellsList.Add(spell);
+            }
+
+            sqlReader.Close();
+        }
+
+        public static void LoadSpellsToLearn()
+        {
+            var connection = DatabaseProvider.CreateConnection();
+            var sqlText = "SELECT * FROM spells_learn";
+            var sqlCommand = new MySqlCommand(sqlText, connection);
+
+            var sqlReader = sqlCommand.ExecuteReader();
+
+            while (sqlReader.Read())
+            {
+                var spell = new Entities.Models.Spells.SpellToLearnModel()
+                {
+                    Race = sqlReader.GetInt16("Classe"),
+                    Level = sqlReader.GetInt16("Level"),
+                    SpellID = sqlReader.GetInt16("SpellId"),
+                    Pos = sqlReader.GetInt16("Position"),
+                };
+
+                SpellsToLearnList.Add(spell);
+            }
+
+            sqlReader.Close();
+        }
+    }
+}
