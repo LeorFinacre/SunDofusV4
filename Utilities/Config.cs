@@ -55,6 +55,10 @@ namespace SunDofus.Utilities
         private static void InitializeValues()
         {
             m_ConfigKey.Add("DEBUG", "TRUE");
+            m_ConfigKey.Add("DBHOST", "127.0.0.1");
+            m_ConfigKey.Add("DBUSER", "root");
+            m_ConfigKey.Add("DBPWD", "");
+            m_ConfigKey.Add("DBNAME", "sundofus");
             m_ConfigKey.Add("LOGIN_VERSION", "1.29.1");
             m_ConfigKey.Add("LOGIN_IP", "127.0.0.1");
             m_ConfigKey.Add("LOGIN_PORT", "485");

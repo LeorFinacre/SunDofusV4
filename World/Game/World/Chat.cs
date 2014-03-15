@@ -2,27 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SunDofus.Network.Clients;
 using SunDofus.World.Game.Characters;
 
 namespace SunDofus.World.Game.World
 {
     class Chat
     {
-        public static void SendGeneralMessage(Network.Realm.RealmClient client, string message)
+        public static void SendGeneralMessage(GameClient client, string message)
         {
             if (client.Player.GetMap() == null) 
                 return;
 
             if (message.Substring(0, 1) == ".")
             {
-                client.Commander.ParseChatCommand(message.Substring(1));
+                //client.Commander.ParseChatCommand(message.Substring(1));
                 return;
             }
 
             client.Player.GetMap().Send(string.Format("cMK|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
         }
 
-        public static void SendIncarnamMessage(Network.Realm.RealmClient client, string message)
+        public static void SendIncarnamMessage(GameClient client, string message)
         {
             if (!client.Player.IsInIncarnam || client.Player.Level > 30)
             {
@@ -30,14 +31,14 @@ namespace SunDofus.World.Game.World
                 return;
             }
 
-            foreach (var character in Network.ServersHandler.RealmServer.Clients.Where
-                (x => x.Authentified == true && x.Player.IsInIncarnam))
+            foreach (GameClient character in Servers.GameServer.Clients.Where
+                (x => (x as GameClient).Authentified == true && (x as GameClient).Player.IsInIncarnam))
             {
                 character.Send(string.Format("cMK^|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
             }
         }
 
-        public static void SendPrivateMessage(Network.Realm.RealmClient client, string receiver, string message)
+        public static void SendPrivateMessage(GameClient client, string receiver, string message)
         {
             if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.Name == receiver))
             {
@@ -53,11 +54,11 @@ namespace SunDofus.World.Game.World
             }
         }
 
-        public static void SendTradeMessage(Network.Realm.RealmClient client, string message)
+        public static void SendTradeMessage(GameClient client, string message)
         {
             if (client.Player.CanSendinTrade() == true)
             {
-                foreach (var character in Network.ServersHandler.RealmServer.Clients.Where(x => x.Authentified == true))
+                foreach (GameClient character in Servers.GameServer.Clients.Where(x => (x as GameClient).Authentified == true))
                     character.Send(string.Format("cMK:|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
 
                 client.Player.RefreshTrade();
@@ -66,11 +67,11 @@ namespace SunDofus.World.Game.World
                 client.Send(string.Concat("Im0115;", client.Player.TimeTrade()));
         }
 
-        public static void SendRecruitmentMessage(Network.Realm.RealmClient client, string message)
+        public static void SendRecruitmentMessage(GameClient client, string message)
         {
             if (client.Player.CanSendinRecruitment() == true)
             {
-                foreach (var character in Network.ServersHandler.RealmServer.Clients.Where(x => x.Authentified == true))
+                foreach (GameClient character in Servers.GameServer.Clients.Where(x => (x as GameClient).Authentified == true))
                     character.Send(string.Format("cMK?|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
 
                 client.Player.RefreshRecruitment();
@@ -79,18 +80,18 @@ namespace SunDofus.World.Game.World
                 client.Send(string.Concat("Im0115;", client.Player.TimeRecruitment()));
         }
 
-        public static void SendFactionMessage(Network.Realm.RealmClient client, string message)
+        public static void SendFactionMessage(GameClient client, string message)
         {
             if (client.Player.Faction.ID != 0 && client.Player.Faction.Level >= 3)
             {
-                foreach (var character in Network.ServersHandler.RealmServer.Clients.Where(x => x.Authentified == true && x.Player.Faction.ID == client.Player.Faction.ID))
+                foreach (GameClient character in Servers.GameServer.Clients.Where(x => (x as GameClient).Authentified == true && (x as GameClient).Player.Faction.ID == client.Player.Faction.ID))
                     character.Send(string.Format("cMK!|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
             }
             else
                 client.Send("BN");
         }
 
-        public static void SendPartyMessage(Network.Realm.RealmClient client, string message)
+        public static void SendPartyMessage(GameClient client, string message)
         {
             if (client.Player.State.Party != null)
             {
@@ -101,7 +102,7 @@ namespace SunDofus.World.Game.World
                 client.Send("BN");
         }
 
-        public static void SendGuildMessage(Network.Realm.RealmClient client, string message)
+        public static void SendGuildMessage(GameClient client, string message)
         {
             if (client.Player.Guild != null)
             {
@@ -112,11 +113,11 @@ namespace SunDofus.World.Game.World
                 client.Send("BN");
         }
 
-        public static void SendAdminMessage(Network.Realm.RealmClient client, string message)
+        public static void SendAdminMessage(GameClient client, string message)
         {
-            if (client.Infos.Level > 0)
+            if (client.Infos.GMLevel > 0)
             {
-                foreach (var character in Network.ServersHandler.RealmServer.Clients.Where(x => x.Authentified == true && x.Infos.Level > 0))
+                foreach (GameClient character in Servers.GameServer.Clients.Where(x => (x as GameClient).Authentified == true && (x as GameClient).Infos.GMLevel > 0))
                     character.Send(string.Format("cMK@|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
             }
             else

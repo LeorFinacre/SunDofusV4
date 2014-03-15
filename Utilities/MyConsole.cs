@@ -10,7 +10,6 @@ namespace SunDofus.Utilities
     class MyConsole
     {
         public static object ConsoleLock = new object();
-        private static int m_LoadingX, m_LoadingY, m_Count;
 
         public static void DrawHeader()
         {
@@ -29,7 +28,6 @@ namespace SunDofus.Utilities
                 Console.WriteLine();
 
                 Console.WriteLine("________________________________________________________________________________");
-
                 Console.WriteLine();
             }
         }
@@ -45,7 +43,7 @@ namespace SunDofus.Utilities
             lock (ConsoleLock)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(" OK!", m_Count, m_Count);
+                Console.WriteLine(" OK!");
             }
         }
     }

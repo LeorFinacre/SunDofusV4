@@ -24,8 +24,8 @@ namespace SunDofus.World.Game.World
 
         public static void SaveWorld()
         {
-            Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.StartMaintenancePacket().GetPacket());
-            SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Where(x => x.IsConnected).ToList().ForEach(x => x.NClient.Send("Im1164"));
+            Servers.GAMESERVER_STATE = Servers.GameState.OnMaintenance;
+            //SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Where(x => x.IsConnected).ToList().ForEach(x => x.NClient.Send("Im1164"));
 
             try
             {
@@ -45,8 +45,8 @@ namespace SunDofus.World.Game.World
 
             }
 
-            SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Where(x => x.IsConnected).ToList().ForEach(x => x.NClient.Send("Im1165"));
-            Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.StopMaintenancePacket().GetPacket());
+            //SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Where(x => x.IsConnected).ToList().ForEach(x => x.NClient.Send("Im1165"));
+            Servers.GAMESERVER_STATE = Servers.GameState.IsConnected;
         }
 
         private static void SaveChararacters()

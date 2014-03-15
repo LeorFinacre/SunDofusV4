@@ -5,9 +5,9 @@ using System.Text;
 using SunDofus.Utilities;
 using SunDofus.Auth.Entities;
 using SunDofus.Auth.Entities.Requests;
-using SunDofus.World.Network;
 using System.Reflection;
 using System.Threading;
+using TinyCore;
 
 namespace SunDofus
 {
@@ -19,9 +19,37 @@ namespace SunDofus
             Console.Title = string.Concat("SunDofus v", Config.Version(Assembly.GetExecutingAssembly().FullName.Split(',')[1].Replace("Version=", "").Trim()));
 
             MyConsole.DrawHeader();
+            Logger.Initialize();
 
-            //Config.LoadConfiguration();
-            //Logger.InitializeLoggers();
+            try
+            {
+                Config.LoadConfiguration();
+
+                OProvider.Initialize("localhost", "root", "", "sundofus");
+                Logger.Write(Logger.LoggerType.Infos, "@Connected@ to the @database@!");
+
+                Servers.InitializeServers();
+
+                //START Load DB
+
+                Servers.LoadBannedIPs();
+                Servers.LoadLevels();
+                Servers.LoadMaps();
+                Servers.LoadCharacters();
+
+                //END Load DB
+
+                //TODO Start GameLogs on Console
+
+                Logger.Write(Logger.LoggerType.Infos, "SunDofus @initialized@ and @started@!");
+            }
+            catch (Exception exception)
+            {
+                Logger.Write(Logger.LoggerType.Errors, exception.ToString());
+            }
+
+            while (true)
+                Console.ReadLine();
 
             //if (Config.GetBool("REALM"))
             //{
@@ -106,8 +134,6 @@ namespace SunDofus
             //    Logger.Console.Write(string.Format("Uptime : Hours : {0} - Minutes : {1} - Seconds : {2}", 
             //        Basic.GetUpTime()[0], Basic.GetUpTime()[1], Basic.GetUpTime()[2]));
             //}
-
-            Console.ReadLine();
         }
     }
 }

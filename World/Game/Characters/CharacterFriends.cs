@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SunDofus.Network.Clients;
 
 namespace SunDofus.World.Game.Characters
 {
@@ -22,11 +23,11 @@ namespace SunDofus.World.Game.Characters
 
             foreach (var friend in character.NClient.Friends)
             {
-                if (Network.ServersHandler.RealmServer.Clients.Any(x => x.Infos.Pseudo == friend && x.Characters.Any(c => c.IsConnected == true)))
+                if (Servers.GameServer.Clients.Any(x => (x as GameClient).Infos.Pseudo == friend && (x as GameClient).Characters.Any(c => c.IsConnected == true)))
                 {
                     packet = string.Concat(packet, friend);
 
-                    var charact = Network.ServersHandler.RealmServer.Clients.First(x => x.Infos.Pseudo == friend).Player;
+                    var charact = (Servers.GameServer.Clients.First(x => (x as GameClient).Infos.Pseudo == friend) as GameClient).Player;
                     bool seeLevel = (charact.NClient.Friends.Contains(character.NClient.Infos.Pseudo) ? true : false);
 
                     packet = string.Format("{0};?;{1};{2};{3};{4};{5};{6}|", packet, charact.Name, (seeLevel ? charact.Level.ToString() : "?"), (seeLevel ? charact.Faction.ID.ToString() : "-1"),
@@ -41,9 +42,9 @@ namespace SunDofus.World.Game.Characters
 
         public void AddFriend(string datas)
         {
-            if (Network.ServersHandler.RealmServer.Clients.Any(x => x.Characters.Any(f => f.Name == datas)))
+            if (Servers.GameServer.Clients.Any(x => (x as GameClient).Characters.Any(f => f.Name == datas)))
             {
-                var charact = Network.ServersHandler.RealmServer.Clients.First(x => x.Characters.Any(f => f.Name == datas));
+                var charact = Servers.GameServer.Clients.First(x => (x as GameClient).Characters.Any(f => f.Name == datas)) as GameClient;
 
                 if (!character.NClient.Friends.Contains(charact.Infos.Pseudo))
                 {
@@ -55,7 +56,8 @@ namespace SunDofus.World.Game.Characters
 
                     character.NClient.Send(string.Concat("FAK", packet));
 
-                    Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.CreatedFriendPacket().GetPacket(character.NClient.Infos.ID, charact.Infos.Pseudo));
+                    //Insert FriendDB
+                    //Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.CreatedFriendPacket().GetPacket(character.NClient.Infos.ID, charact.Infos.Pseudo));
                 }
                 else
                     character.NClient.Send("FAEa");
@@ -75,23 +77,25 @@ namespace SunDofus.World.Game.Characters
                     character.NClient.Friends.Remove(name);
                     character.NClient.Send("FDK");
 
-                    Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.DeletedFriendPacket().GetPacket(character.NClient.Infos.ID, name));
+                    //Delete friend db
+                    //Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.DeletedFriendPacket().GetPacket(character.NClient.Infos.ID, name));
                 }
                 else
                     character.NClient.Send("FDEf");
             }
             else if(datas.Substring(0,1) == "%")
             {
-                if (Network.ServersHandler.RealmServer.Clients.Any(x => x.Characters.Any(f => f.Name == name)))
+                if (Servers.GameServer.Clients.Any(x => (x as GameClient).Characters.Any(f => f.Name == name)))
                 {
-                    var client = Network.ServersHandler.RealmServer.Clients.First(x => x.Characters.Any(f => f.Name == name));
+                    var client = Servers.GameServer.Clients.First(x => (x as GameClient).Characters.Any(f => f.Name == name)) as GameClient;
 
                     if (character.NClient.Friends.Contains(client.Infos.Pseudo))
                     {
                         character.NClient.Friends.Remove(client.Infos.Pseudo);
                         character.NClient.Send("FDK");
 
-                        Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.DeletedFriendPacket().GetPacket(character.NClient.Infos.ID, client.Infos.Pseudo));
+                        //Delete friend db
+                        //Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.DeletedFriendPacket().GetPacket(character.NClient.Infos.ID, client.Infos.Pseudo));
                     }
                     else
                         character.NClient.Send("FDEf");

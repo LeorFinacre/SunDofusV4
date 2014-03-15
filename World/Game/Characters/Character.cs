@@ -6,9 +6,9 @@ using SunDofus;
 using SunDofus.World.Game.Characters.Stats;
 using SunDofus.World.Game.Characters.Spells;
 using SunDofus.World.Game.Characters.Items;
-using SunDofus.World.Network.Realm;
 using SunDofus.World.Game.Maps.Fights;
 using SunDofus.World.Entities;
+using SunDofus.Network.Clients;
 
 namespace SunDofus.World.Game.Characters
 {
@@ -54,7 +54,7 @@ namespace SunDofus.World.Game.Characters
         public Guilds.Guild Guild { get; set; }
         public InventaryItems ItemsInventary { get; set; }
         public InventarySpells SpellsInventary { get; set; }
-        public RealmClient NClient { get; set; }
+        public GameClient NClient { get; set; }
 
         public CharacterState State { get; set; }
         public CharacterFaction Faction { get; set; }

@@ -51,6 +51,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TinyCore, Version=0.1.1.7, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\TinySQL\TinyCore\bin\Debug\TinyCore.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auth\Entities\DatabaseProvider.cs" />
@@ -60,20 +64,21 @@
     <Compile Include="Auth\Entities\Requests\AccountsRequests.cs" />
     <Compile Include="Auth\Entities\Requests\GiftsRequests.cs" />
     <Compile Include="Auth\Entities\Requests\ServersRequests.cs" />
-    <Compile Include="Auth\Network\Auth\AuthClient.cs" />
-    <Compile Include="Auth\Network\Auth\AuthServer.cs" />
-    <Compile Include="Auth\Network\ServersHandler.cs" />
-    <Compile Include="Auth\Network\Sync\Packets\MasterPacket.cs" />
-    <Compile Include="Auth\Network\Sync\Packets\PHelloConnect.cs" />
-    <Compile Include="Auth\Network\Sync\Packets\PHelloConnectSuccess.cs" />
-    <Compile Include="Auth\Network\Sync\Packets\PTransfer.cs" />
-    <Compile Include="Auth\Network\Sync\SyncClient.cs" />
-    <Compile Include="Auth\Network\Sync\SyncServer.cs" />
     <Compile Include="Databases\PreparedStatements.cs" />
-    <Compile Include="Master\TCPClient.cs" />
-    <Compile Include="Master\TCPServer.cs" />
+    <Compile Include="DataRecords\DB_Account.cs" />
+    <Compile Include="DataRecords\DB_BannedIP.cs" />
+    <Compile Include="DataRecords\DB_Character.cs" />
+    <Compile Include="DataRecords\DB_Level.cs" />
+    <Compile Include="DataRecords\DB_Map.cs" />
+    <Compile Include="Network\Clients\GameClient.cs" />
+    <Compile Include="Network\Clients\RealmClient.cs" />
+    <Compile Include="Network\Parsers\GameParser.cs" />
+    <Compile Include="Network\Parsers\RealmParser.cs" />
+    <Compile Include="Network\TCPClient.cs" />
+    <Compile Include="Network\TCPServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Servers.cs" />
     <Compile Include="Utilities\Basic.cs" />
     <Compile Include="Utilities\BooleanByte.cs" />
     <Compile Include="Utilities\CellZone.cs" />
@@ -100,7 +105,6 @@
     <Compile Include="World\Entities\Models\Spells\SpellLevelModel.cs" />
     <Compile Include="World\Entities\Models\Spells\SpellModel.cs" />
     <Compile Include="World\Entities\Models\Spells\SpellToLearn.cs" />
-    <Compile Include="World\Entities\Requests\Client\AuthsRequests.cs" />
     <Compile Include="World\Entities\Requests\Client\CharactersRequests.cs" />
     <Compile Include="World\Entities\Requests\Client\ItemsRequests.cs" />
     <Compile Include="World\Entities\Requests\Client\SpellsRequests.cs" />
@@ -172,28 +176,6 @@
     <Compile Include="World\Game\World\Conditions\NPCConditions.cs" />
     <Compile Include="World\Game\World\Conditions\TriggerCondition.cs" />
     <Compile Include="World\Game\World\Save.cs" />
-    <Compile Include="World\Network\Auth\AuthClient.cs" />
-    <Compile Include="World\Network\Auth\AuthKeys.cs" />
-    <Compile Include="World\Network\Auth\AuthLinks.cs" />
-    <Compile Include="World\Network\Auth\Packets\AuthenticationPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\ClientConnectedPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\ClientDisconnectedPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\CreatedCharacterPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\CreatedEnemyPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\CreatedFriendPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\DeletedCharacterPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\DeletedEnemyPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\DeletedFriendPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\DeletedGiftPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\ListOfConnectedPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\MasterPacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\StartMaintenancePacket.cs" />
-    <Compile Include="World\Network\Auth\Packets\StopMaintenancePacket.cs" />
-    <Compile Include="World\Network\Realm\RealmClient.cs" />
-    <Compile Include="World\Network\Realm\RealmCommander.cs" />
-    <Compile Include="World\Network\Realm\RealmParser.cs" />
-    <Compile Include="World\Network\Realm\RealmServer.cs" />
-    <Compile Include="World\Network\ServersHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -207,6 +189,7 @@
     <Content Include="Databases\sunrealm.sql" />
     <Content Include="Librairies\MySql.Data.dll" />
     <Content Include="Librairies\SilverSock.dll" />
+    <Content Include="Librairies\TinyCore.dll" />
     <Content Include="settings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

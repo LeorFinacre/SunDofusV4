@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Settings>
   <DEBUG>TRUE</DEBUG>
+  <DBHOST>127.0.0.1</DBHOST>
+  <DBUSER>root</DBUSER>
+  <DBPWD></DBPWD>
+  <DBNAME>sundofus</DBNAME>
   <LOGIN_VERSION>1.29.1</LOGIN_VERSION>
   <LOGIN_IP>127.0.0.1</LOGIN_IP>
   <LOGIN_PORT>485</LOGIN_PORT>

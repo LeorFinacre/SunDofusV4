@@ -2,30 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using SilverSock;
+using SunDofus.DataRecords;
+using SunDofus.Network.Parsers;
 using SunDofus.World.Game.Characters;
-using SunDofus.World.Entities.Models.Clients;
 
-namespace SunDofus.World.Network.Realm
+namespace SunDofus.Network.Clients
 {
-    class RealmClient : Master.TCPClient
+    class GameClient : TCPClient
     {
-        public bool Authentified { get; set; }
-        public bool IsInQueue { get; set; }
-
-        public Character Player { get; set; }
-        public List<Character> Characters { get; set; }
-
-        public List<string> Friends { get; set; }
-        public List<string> Enemies { get; set; }
-
-        public AccountModel Infos { get; set; }
-        public RealmCommander Commander { get; set; }
-
-        private object locker;
-        private RealmParser parser;
-
-        public RealmClient(SilverSocket socket) :  base(socket)
+        public GameClient(SilverSocket s)
+            : base(s)
         {
             locker = new object();
 
@@ -36,8 +24,8 @@ namespace SunDofus.World.Network.Realm
             Friends = new List<string>();
             Enemies = new List<string>();
 
-            Commander = new RealmCommander(this);
-            parser = new RealmParser(this);
+            //Commander = new RealmCommander(this);
+            parser = new GameParser(this);
 
             Player = null;
             Authentified = false;
@@ -45,10 +33,25 @@ namespace SunDofus.World.Network.Realm
             Send("HG");
         }
 
+        public bool Authentified { get; set; }
+        public bool IsInQueue { get; set; }
+
+        public Character Player { get; set; }
+        public List<Character> Characters { get; set; }
+
+        public List<string> Friends { get; set; }
+        public List<string> Enemies { get; set; }
+
+        public DB_Account Infos { get; set; }
+        //public RealmCommander Commander { get; set; }
+
+        private object locker;
+        private GameParser parser;
+
         public void Send(string message)
         {
-            lock(locker)
-                this.SendDatas(message);
+            lock (locker)
+                this.SendBytes(message);
 
             Utilities.Logger.Write(Utilities.Logger.LoggerType.Debug, "Sent to <{0}> : {1}", IP, message);
         }
@@ -61,37 +64,37 @@ namespace SunDofus.World.Network.Realm
 
         public void ParseCharacters()
         {
-            foreach (var name in Infos.Characters)
-            {
-                if (!SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.Name == name))
-                {
-                    Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.DeletedCharacterPacket().GetPacket(Infos.ID, name));
-                    continue;
-                }
+            //foreach (var name in Infos.Characters)
+            //{
+            //    if (!SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.Name == name))
+            //    {
+            //        //delete character with name 'name'
+            //        continue;
+            //    }
 
-                var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First(x => x.Name == name);
-                Characters.Add(character);
-            }
+            //    var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First(x => x.Name == name);
+            //    Characters.Add(character);
+            //}
         }
 
         public void SendGifts()
         {
-            Infos.ParseGifts();
+            //Infos.ParseGifts();
 
-            foreach (var gift in Infos.Gifts)
-            {
-                if (!Entities.Requests.ItemsRequests.ItemsList.Any(x => x.ID == gift.ItemID))
-                    return;
+            //foreach (var gift in Infos.Gifts)
+            //{
+            //    if (!Entities.Requests.ItemsRequests.ItemsList.Any(x => x.ID == gift.ItemID))
+            //        return;
 
-                var item = new SunDofus.World.Game.Characters.Items.CharacterItem(Entities.Requests.ItemsRequests.ItemsList.First(x => x.ID == gift.ItemID));
+            //    var item = new SunDofus.World.Game.Characters.Items.CharacterItem(Entities.Requests.ItemsRequests.ItemsList.First(x => x.ID == gift.ItemID));
 
-                item.GeneratItem();
+            //    item.GeneratItem();
 
-                gift.Item = item;
+            //    gift.Item = item;
 
-                this.Send(string.Format("Ag1|{0}|{1}|{2}|{3}|{4}~{5}~{6}~~{7};", gift.ID, gift.Title, gift.Message, (gift.Image != "" ? gift.Image : "http://s2.e-monsite.com/2009/12/26/04/167wpr7.png"),
-                   Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Quantity), item.EffectsInfos()));
-            }
+            //    this.Send(string.Format("Ag1|{0}|{1}|{2}|{3}|{4}~{5}~{6}~~{7};", gift.ID, gift.Title, gift.Message, (gift.Image != "" ? gift.Image : "http://s2.e-monsite.com/2009/12/26/04/167wpr7.png"),
+            //       Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Quantity), item.EffectsInfos()));
+            //}
         }
 
         public void SendConsoleMessage(string message, int color = 1)
@@ -118,7 +121,7 @@ namespace SunDofus.World.Network.Realm
 
             if (Authentified == true)
             {
-                Network.ServersHandler.AuthLinks.Send(new Network.Auth.Packets.ClientDisconnectedPacket().GetPacket(Infos.Pseudo));
+                //Update to connected 0
 
                 if (Player != null)
                 {
@@ -227,14 +230,14 @@ namespace SunDofus.World.Network.Realm
                 }
             }
 
-            if (Authentified)
-            {
-                lock (ServersHandler.RealmServer.PseudoClients)
-                    ServersHandler.RealmServer.PseudoClients.Remove(Infos.Pseudo);
-            }
+            //if (Authentified)
+            //{
+            //    lock (ServersHandler.RealmServer.PseudoClients)
+            //        ServersHandler.RealmServer.PseudoClients.Remove(Infos.Pseudo);
+            //}
 
-            lock(Network.ServersHandler.RealmServer.Clients)
-                Network.ServersHandler.RealmServer.Clients.Remove(this);
+            //lock(Network.ServersHandler.RealmServer.Clients)
+            //    Network.ServersHandler.RealmServer.Clients.Remove(this);
         }
     }
 }
