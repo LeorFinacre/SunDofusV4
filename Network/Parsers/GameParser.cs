@@ -1427,6 +1427,40 @@ namespace SunDofus.Network.Parsers
 
         private void UseEmote(string packet)
         {
+            //JAVA -> Emulator PIOU
+
+            //if (client == null || packet == null || client.getAccount() == null || client.getCharacter() == null)
+            //{
+            //    return;
+            //}
+            //Characters c = client.getCharacter();
+            //int emote;
+            //try
+            //{
+            //    emote = Integer.parseInt(packet.substring(2));
+            //}
+            //catch (NumberFormatException ex)
+            //{
+            //    client.sendPacket(EmotePacket.getInstance().useFail(c));
+            //    return;
+            //}
+            //if (emote <= 0 || !c.hasEmoteNbr(emote))
+            //{
+            //    client.sendPacket(EmotePacket.getInstance().useFail(c));
+            //    return;
+            //}
+            //c.getLocation().getMap().sendPacket(EmotePacket.getInstance().use(c, emote));
+            //if ((emote == 1 || emote == 19) && !c.isSit())
+            //{
+            //    c.regenLife();
+            //    c.setSit(true);
+            //}
+            //else if (!(emote == 1 || emote == 19) && c.isSit())
+            //{
+            //    c.regenLife();
+            //    c.setSit(false);
+            //}
+
             int emote;
 
             if (!int.TryParse(packet, out emote))

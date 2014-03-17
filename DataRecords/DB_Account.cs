@@ -61,7 +61,7 @@ namespace SunDofus.DataRecords
 
         internal void ParseCharacters()
         {
-            throw new NotImplementedException();
+
         }
     }
 }

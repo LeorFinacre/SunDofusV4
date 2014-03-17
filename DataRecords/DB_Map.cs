@@ -37,11 +37,11 @@ namespace SunDofus.DataRecords
         [OProperty("groupsize", OProperty.TinyPropertyType.INT)]
         public int MaxGroupSize { get; set; }
 
-        //public Dictionary<int, List<int>> Monsters { get; set; }
+        public Dictionary<int, List<int>> Monsters { get; private set; }
 
         public DB_Map()
         {
-            //Monsters = new Dictionary<int, List<int>>();
+            Monsters = new Dictionary<int, List<int>>();
         }
 
         public void ParsePos()

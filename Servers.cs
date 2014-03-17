@@ -7,6 +7,7 @@ using SunDofus.DataRecords;
 using SunDofus.Network;
 using SunDofus.Network.Clients;
 using SunDofus.Utilities;
+using System.Timers;
 
 namespace SunDofus
 {
@@ -19,11 +20,11 @@ namespace SunDofus
             OnMaintenance = 2
         }
 
-        public static TCPServer RealmServer;
-        public static TCPServer GameServer;
+        public static TCPServer RealmServer { get; private set; }
+        public static TCPServer GameServer { get; private set; }
 
-        public static int GAMESERVER_ID;
-        public static GameState GAMESERVER_STATE;
+        public static int GAMESERVER_ID { get; private set; }
+        public static GameState GAMESERVER_STATE { get; set; }
 
         public static void InitializeServers()
         {
@@ -72,9 +73,14 @@ namespace SunDofus
         }
 
         public static List<DB_BannedIP> BannedIPs;
-        public static List<DB_Character> Characters;
         public static List<DB_Level> Levels;
         public static List<DB_Map> Maps;
+
+        public static List<DB_Character> Characters;
+        public static List<DB_CharacterFaction> CharactersFactions;
+        public static List<DB_CharacterItem> CharactersItems;
+        public static List<DB_CharacterSpell> CharactersSpells;
+        public static List<DB_CharacterStats> CharactersStats;
 
         #region GameKeys
 
@@ -107,6 +113,18 @@ namespace SunDofus
         {
             MyConsole.StartLoading("Loading characters");
             Characters = DB_Character.Find<DB_Character>();
+
+            foreach (var c in Characters)
+            {
+                c.Faction = CharactersFactions.First(x => x.CharacterID == c.ID);
+                c.Faction.SetCharacter(c);
+
+                c.Stats = CharactersStats.First(x => x.CharacterID == c.ID);
+
+                c.Items = CharactersItems.Where(x => x.CharacterID == c.ID).ToList();
+                c.Spells = CharactersSpells.Where(x => x.CharacterID == c.ID).ToList();
+            }
+
             MyConsole.StopLoading();
         }
 
@@ -131,5 +149,31 @@ namespace SunDofus
         }
 
         #endregion
+
+        private static object m_SaveLocker = new object();
+
+        public static void InitializeAutoSave()
+        {
+            var timer = new Timer(Config.GetInt32("AUTOSAVETIME"));
+            timer.Elapsed += new ElapsedEventHandler(SaveWorld);
+            timer.Start();
+        }
+
+        public static void SaveWorld(object sender, EventArgs e)
+        {
+            lock (m_SaveLocker)
+            {
+                GAMESERVER_STATE = Servers.GameState.OnMaintenance;
+
+                BannedIPs.ForEach(x => x.Update());
+                Characters.ForEach(x => x.Update());
+                CharactersFactions.ForEach(x => x.Update());
+                CharactersItems.ForEach(x => x.Update());
+                CharactersSpells.ForEach(x => x.Update());
+                CharactersStats.ForEach(x => x.Update());
+
+                GAMESERVER_STATE = Servers.GameState.IsConnected;
+            }
+        }
     }
 }

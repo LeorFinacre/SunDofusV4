@@ -36,7 +36,7 @@ namespace SunDofus.Network.Clients
         public bool Authentified { get; set; }
         public bool IsInQueue { get; set; }
 
-        public Character Player { get; set; }
+        public DB_Character Player { get; set; }
         public List<Character> Characters { get; set; }
 
         public List<string> Friends { get; set; }
@@ -236,8 +236,8 @@ namespace SunDofus.Network.Clients
             //        ServersHandler.RealmServer.PseudoClients.Remove(Infos.Pseudo);
             //}
 
-            //lock(Network.ServersHandler.RealmServer.Clients)
-            //    Network.ServersHandler.RealmServer.Clients.Remove(this);
+            lock (Servers.GameServer.Clients)
+                Servers.GameServer.Clients.Remove(this);
         }
     }
 }
