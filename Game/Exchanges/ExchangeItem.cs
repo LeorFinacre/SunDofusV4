@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SunDofus.World.Game.Characters.Items;
 
-namespace SunDofus.World.Game.Exchanges
+namespace SunDofus.Game.Exchanges
 {
     class ExchangeItem
     {

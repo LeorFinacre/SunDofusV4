@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SunDofus.World.Game.Characters.Spells;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     class FighterSpell
     {

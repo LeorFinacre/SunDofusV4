@@ -63,13 +63,14 @@
     <Compile Include="DataRecords\DB_BannedIP.cs" />
     <Compile Include="DataRecords\DB_Character.cs" />
     <Compile Include="DataRecords\DB_CharacterChannel.cs" />
-    <Compile Include="DataRecords\DB_CharacterEnemy.cs" />
+    <Compile Include="DataRecords\DB_AccountEnemy.cs" />
     <Compile Include="DataRecords\DB_CharacterFaction.cs" />
-    <Compile Include="DataRecords\DB_CharacterFriend.cs" />
+    <Compile Include="DataRecords\DB_AccountFriend.cs" />
     <Compile Include="DataRecords\DB_CharacterItem.cs" />
     <Compile Include="DataRecords\DB_CharacterJob.cs" />
     <Compile Include="DataRecords\DB_CharacterSpell.cs" />
     <Compile Include="DataRecords\DB_CharacterStats.cs" />
+    <Compile Include="DataRecords\DB_Gift.cs" />
     <Compile Include="DataRecords\DB_Guild.cs" />
     <Compile Include="DataRecords\DB_GuildCollector.cs" />
     <Compile Include="DataRecords\DB_GuildMember.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="DataRecords\DB_Level.cs" />
     <Compile Include="DataRecords\DB_Map.cs" />
     <Compile Include="DataRecords\DB_NPC.cs" />
+    <Compile Include="DataRecords\DB_Trigger.cs" />
     <Compile Include="DataRecords\DB_Zaap.cs" />
     <Compile Include="DataRecords\DB_Zaapis.cs" />
     <Compile Include="Game\Conditions\ItemsConditions.cs" />
@@ -100,7 +102,6 @@
     <Compile Include="Utilities\MyConsole.cs" />
     <Compile Include="Game\Bank\BankExchange.cs" />
     <Compile Include="Game\Bank\BanksManager.cs" />
-    <Compile Include="Game\Characters\Character.cs" />
     <Compile Include="Game\Characters\CharacterParty.cs" />
     <Compile Include="Game\Characters\CharacterSet.cs" />
     <Compile Include="Game\Stats\EffectEnum.cs" />
@@ -126,7 +127,6 @@
     <Compile Include="Game\Maps\Fights\Fighters\FighterSpell.cs" />
     <Compile Include="Game\Maps\Fights\Fighters\MonsterFighter.cs" />
     <Compile Include="Game\Maps\Fights\FightTeam.cs" />
-    <Compile Include="Game\Maps\Map.cs" />
     <Compile Include="Game\Maps\Monsters\Monster.cs" />
     <Compile Include="Game\Maps\Monsters\MonsterIA.cs" />
     <Compile Include="Game\Maps\Monsters\MonstersGroup.cs" />

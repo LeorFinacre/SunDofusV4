@@ -5,7 +5,7 @@ using System.Text;
 using SunDofus.Utilities;
 using SunDofus.World.Game.Maps.Fights;
 
-namespace SunDofus.World.Game.Effects
+namespace SunDofus.Game.Effects
 {
     class EffectSpellTarget
     {

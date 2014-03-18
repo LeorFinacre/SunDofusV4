@@ -7,7 +7,7 @@ using SunDofus.World.Game.Maps.Monsters;
 using SunDofus.World.Game.Characters.Stats;
 using SunDofus.World.Game.Characters;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     class MonsterFighter : Fighter
     {

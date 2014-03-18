@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SunDofus.World.Game.Characters.Items
+namespace SunDofus.Game.Characters.Items
 {
     class CharacterSet
     {

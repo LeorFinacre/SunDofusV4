@@ -80,7 +80,9 @@ namespace SunDofus.Network.Parsers
 
                             return;
 
-                        //case "AX":
+                        //If you need to code the multi-server, enable the case Ax and rename the default to AX
+
+                        //case "Ax":
 
                         //    m_Client.Send("AxK{0}|{1},{2}", m_Client.Account.SubscriptionTime, Servers.GAMESERVER_ID, m_Client.Account.CharacterCnt);
 

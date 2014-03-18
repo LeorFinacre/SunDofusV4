@@ -5,7 +5,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using SunDofus.World.Game.Characters;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     class ChallengeFight : Fight
     {

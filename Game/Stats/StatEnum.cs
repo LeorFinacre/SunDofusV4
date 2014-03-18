@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SunDofus.World.Game.Characters.Stats
+namespace SunDofus.Game.Characters.Stats
 {
     enum StatEnum
     {
@@ -12,15 +12,15 @@ namespace SunDofus.World.Game.Characters.Stats
         MaxLife,
         MaxPods,
 
-        Vitalite,
-        Sagesse,
-        Force,
+        Vitality,
+        Wisdom,
+        Strength,
         Intelligence,
-        Chance,
-        Agilite,
-        MaxPA,
-        MaxPM,
-        PO,
+        Luck,
+        Agility,
+        MaxAP,
+        MaxMP,
+        RP,
         InvocationMax,
 
         Damage,
@@ -29,43 +29,43 @@ namespace SunDofus.World.Game.Characters.Stats
         DamagePercent,
         DamagePiege,
         DamagePiegePercent,
-        Soins,
+        Heal,
         ReflectDamage,
         DamageCritic,
         EchecCritic,
-        EsquivePA,
-        EsquivePM,
+        StrengthAP,
+        StrengthMP,
 
         ReduceDamagePhysic,
         ReduceDamageMagic,
 
-        ReduceDamageNeutre,
-        ReduceDamagePercentNeutre,
-        ReduceDamageTerre,
-        ReduceDamagePercentTerre,
-        ReduceDamageFeu,
-        ReduceDamagePercentFeu,
-        ReduceDamageEau,
-        ReduceDamagePercentEau,
+        ReduceDamageNeutral,
+        ReduceDamagePercentNeutral,
+        ReduceDamageEarth,
+        ReduceDamagePercentEarth,
+        ReduceDamageFire,
+        ReduceDamagePercentFire,
+        ReduceDamageWater,
+        ReduceDamagePercentWater,
         ReduceDamageAir,
         ReduceDamagePercentAir,
 
-        ReduceDamagePvPNeutre,
-        ReduceDamagePercentPvPNeutre,
-        ReduceDamagePvPTerre,
-        ReduceDamagePercentPvPTerre,
-        ReduceDamagePvPFeu,
-        ReduceDamagePercentPvPFeu,
-        ReduceDamagePvPEau,
-        ReduceDamagePercentPvPEau,
+        ReduceDamagePvPNeutral,
+        ReduceDamagePercentPvPNeutral,
+        ReduceDamagePvPEarth,
+        ReduceDamagePercentPvPEarth,
+        ReduceDamagePvPFire,
+        ReduceDamagePercentPvPFire,
+        ReduceDamagePvPWater,
+        ReduceDamagePercentPvPWater,
         ReduceDamagePvPAir,
         ReduceDamagePercentPvPAir,
 
         Armor,
-        ArmorNeutre,
-        ArmorTerre,
-        ArmorFeu,
+        ArmorNeutral,
+        ArmorEarth,
+        ArmorFire,
         ArmorAir,
-        ArmorEau
+        ArmorWater
     }
 }

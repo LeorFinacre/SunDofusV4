@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SunDofus.World.Game.Characters;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     public enum ToggleType
     {

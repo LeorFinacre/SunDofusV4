@@ -29,8 +29,9 @@ namespace SunDofus.Network.Clients
         public RealmClient(SilverSocket s)
             : base(s)
         {
-            m_Locker = new object();
             Key = Basic.RandomString(32);
+
+            m_Locker = new object();
             m_Parser = new RealmParser(this);
 
             State = RealmClientState.CHECK_VERSION;

@@ -34,6 +34,8 @@ namespace SunDofus
                 Servers.LoadLevels();
                 Servers.LoadMaps();
                 Servers.LoadCharacters();
+                Servers.LoadFriends();
+                Servers.LoadEnemies();
 
                 //END Load DB
 

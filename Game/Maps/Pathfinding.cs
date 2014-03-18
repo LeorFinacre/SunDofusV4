@@ -2,6 +2,7 @@
  * ORIGINAL CLASS BY NIGHTWOLF FROM THE SNOWING's PROJECT ! All rights reserved !
 */
 
+using SunDofus.DataRecords;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,9 @@ namespace SunDofus.Game.Maps
         private int startDir;
         private bool trigger;
 
-        private Map map;
+        private DB_Map map;
 
-        public Pathfinding(string path, Map map, int startCell, int startDir, bool trigger = false)
+        public Pathfinding(string path, DB_Map map, int startCell, int startDir, bool trigger = false)
         {
             strPath = path;
             this.map = map;
@@ -103,7 +104,7 @@ namespace SunDofus.Game.Maps
             return hash.IndexOf(dirChar);
         }
 
-        public static int GetDistanceBetween(Map map, int id1, int id2)
+        public static int GetDistanceBetween(DB_Map map, int id1, int id2)
         {
             if (id1 == id2 || map == null)
                 return 0;
@@ -114,13 +115,13 @@ namespace SunDofus.Game.Maps
             return (diffX + diffY);
         }
 
-        public static int GetCellXCoord(Map map, int cellID)
+        public static int GetCellXCoord(DB_Map map, int cellID)
         {
             int width = map.Model.Width;
             return ((cellID - (width - 1) * GetCellYCoord(map, cellID)) / width);
         }
 
-        public static int GetCellYCoord(Map map, int cellID)
+        public static int GetCellYCoord(DB_Map map, int cellID)
         {
             int width = map.Model.Width;
             int loc5 = (int)(cellID / ((width * 2) - 1));
@@ -130,7 +131,7 @@ namespace SunDofus.Game.Maps
             return (loc5 - loc7);
         }
 
-        public static int GetDirection(Map map, int cell1, int cell2)
+        public static int GetDirection(DB_Map map, int cell1, int cell2)
         {
             int[] ListChange = new int[] { 1, map.Model.Width, map.Model.Width * 2 - 1, map.Model.Width - 1, -1, -map.Model.Width, -map.Model.Width * 2 + 1, -(map.Model.Width - 1) };
             int Result = cell2 - cell1;
@@ -158,7 +159,7 @@ namespace SunDofus.Game.Maps
             return (direction >= 4 ? direction - 4 : direction + 4);
         }
 
-        public static bool InLine(Map map, int cell1, int cell2)
+        public static bool InLine(DB_Map map, int cell1, int cell2)
         {
             bool isX = GetCellXCoord(map, cell1) == GetCellXCoord(map, cell2);
             bool isY = GetCellYCoord(map, cell1) == GetCellYCoord(map, cell2);
@@ -166,7 +167,7 @@ namespace SunDofus.Game.Maps
             return isX || isY;
         }
 
-        public static int NextCell(Map map, int cell, int dir)
+        public static int NextCell(DB_Map map, int cell, int dir)
         {
             switch (dir)
             {

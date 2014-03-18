@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SunDofus.World.Game.Characters.Stats;
 
-namespace SunDofus.World.Game.Maps.Fights.Effects
+namespace SunDofus.Game.Maps.Fights.Effects
 {
     class BuffProcessor
     {

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SunDofus.World.Game.Maps;
+using SunDofus.Game.Maps;
+using SunDofus.DataRecords;
 
 namespace SunDofus.Utilities
 {
     class CellZone
     {
-        public static List<int> GetAdjacentCells(Map map, int cell)
+        public static List<int> GetAdjacentCells(DB_Map map, int cell)
         {
             var cells = new List<int>();
 
@@ -18,7 +19,7 @@ namespace SunDofus.Utilities
             return cells;
         }
 
-        public static List<int> GetLineCells(Map map, int cell, int direction, int length)
+        public static List<int> GetLineCells(DB_Map map, int cell, int direction, int length)
         {
             var cells = new List<int>();
             var lastCell = cell;
@@ -32,7 +33,7 @@ namespace SunDofus.Utilities
             return cells;
         }
 
-        public static List<int> GetCircleCells(Map map, int currentCell, int radius)
+        public static List<int> GetCircleCells(DB_Map map, int currentCell, int radius)
         {
             var cells = new List<int>() { currentCell };
 
@@ -47,7 +48,7 @@ namespace SunDofus.Utilities
             return cells;
         }
 
-        public static List<int> GetCrossCells(Map map, int currentCell, int radius)
+        public static List<int> GetCrossCells(DB_Map map, int currentCell, int radius)
         {
             var cells = new List<int>();
 
@@ -60,7 +61,7 @@ namespace SunDofus.Utilities
             return cells;
         }
 
-        public static List<int> GetTLineCells(Map map, int cell, int direction, int length)
+        public static List<int> GetTLineCells(DB_Map map, int cell, int direction, int length)
         {
             var lineDirection = direction <= 5 ? direction + 2 : direction - 6;
             var cells = new List<int>();
@@ -71,7 +72,7 @@ namespace SunDofus.Utilities
             return cells;
         }
 
-        public static List<int> GetCells(Map map, int cell, int currentCell, string range)
+        public static List<int> GetCells(DB_Map map, int cell, int currentCell, string range)
         {
             switch (range[0])
             {

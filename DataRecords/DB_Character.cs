@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using SunDofus.Game.Maps;
 using SunDofus.Utilities;
 using TinyCore;
+using SunDofus.Game.Characters.Stats;
+using SunDofus.Network.Clients;
+using SunDofus.Game.Characters;
 
 namespace SunDofus.DataRecords
 {
@@ -59,20 +62,97 @@ namespace SunDofus.DataRecords
         [OProperty("kamas", OProperty.TinyPropertyType.LONG)]
         public long Kamas { get; set; }
 
+        public int Energy { get; set; }
+
+        private long m_QuotaTrade;
+        private long m_QuotaRecruitment;
+
         [OProperty("emotes", OProperty.TinyPropertyType.INT)]
         protected int p_Emotes { get; set; }
+        
+        private GameClient m_Client;
 
+        public GenericStats GenericStats { get; set; }
+        public DB_Map Map { get; set; }
+        public DB_Guild Guild { get; set; }
+        public CharacterParty Party { get; set; }
         public DB_CharacterStats Stats { get; set; }
         public DB_CharacterFaction Faction { get; set; }
         public List<DB_CharacterItem> Items { get; set; }
         public List<DB_CharacterSpell> Spells { get; set; }
+        public List<DB_CharacterChannel> Channels { get; set; }
+        public List<DB_Zaap> Zaaps { get; set; }
 
         public DB_Character()
         {
             p_Emotes = 1;
+            Energy = 10000;
+            m_QuotaRecruitment = 0;
+            m_QuotaTrade = 0;
 
-            Followers = new List<DB_Character>();
+            IsConnected = false;            
+
+            Followers = new List<DB_Character>();            
+            GenericStats = new GenericStats(this);
+            Stats = new DB_CharacterStats();
+            Map = null;
+            Faction = new DB_CharacterFaction();
+            Items = new List<DB_CharacterItem>();
+            Spells = new List<DB_CharacterSpell>();
+            Channels = new List<DB_CharacterChannel>();
+            Zaaps = new List<DB_Zaap>();
         }
+
+        public void SetClient(GameClient client)
+        {
+            m_Client = client;
+        }
+
+        public void Send(string message)
+        {
+            if(m_Client != null)
+                m_Client.Send(message);
+        }
+
+        public void Send(string format, params object[] args)
+        {
+            Send(string.Format(format, args));
+        }
+
+        #region Exp
+
+        public void AddExp(long exp)
+        {
+            Exp += exp;
+            LevelUp();
+        }
+
+        private void LevelUp()
+        {
+            if (this.Level == Entities.Requests.LevelsRequests.MaxLevel())
+                return;
+
+            if (Exp >= Entities.Requests.LevelsRequests.ReturnLevel(Level + 1).Character)
+            {
+                while (Exp >= Entities.Requests.LevelsRequests.ReturnLevel(Level + 1).Character)
+                {
+                    if (this.Level == Entities.Requests.LevelsRequests.MaxLevel())
+                        break;
+
+                    Level++;
+                    SpellPoint++;
+                    CharactPoint += 5;
+                }
+
+                if(IsConnected)
+                    NClient.Send(string.Concat("AN", Level));
+
+                SpellsInventary.LearnSpells();
+                SendChararacterStats();
+            }
+        }
+
+        #endregion
 
         #region Pattern
 
@@ -84,14 +164,31 @@ namespace SunDofus.DataRecords
                 builder.Append(Name).Append(";");
                 builder.Append(Level).Append(";");
                 builder.Append(Skin).Append(";");
-                builder.Append(Basic.DeciToHex(Color)).Append(";");
-                builder.Append(Basic.DeciToHex(Color2)).Append(";");
-                builder.Append(Basic.DeciToHex(Color3)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color2)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color3)).Append(";");
+                builder.Append(GetItemsPos()).Append(";");
+                builder.Append("0;").Append(Utilities.Config.GetInt32("SERVERID")).Append(";;;");
+            }
 
-                //builder.Append(GetItemsPos()).Append(";");
-                builder.Append(",,,,"); //Items
+            return builder.ToString();
+        }
 
-                builder.Append("0;").Append(Servers.GAMESERVER_ID).Append(";;;");
+        public string PatternOnParty()
+        {
+            StringBuilder builder = new StringBuilder();
+            {
+                builder.Append(ID).Append(";");
+                builder.Append(Name).Append(";");
+                builder.Append(Skin).Append(";");
+                builder.Append(Color).Append(";");
+                builder.Append(Color2).Append(";");
+                builder.Append(Color3).Append(";");
+                builder.Append(GetItemsPos()).Append(";");
+                builder.Append(Life).Append(",").Append(Stats.GetStat(StatEnum.MaxLife).Total).Append(";");
+                builder.Append(Level).Append(";");
+                builder.Append(Stats.GetStat(StatEnum.Initiative).Total).Append(";");
+                builder.Append(Stats.GetStat(StatEnum.Prospection).Total).Append(";0");
             }
 
             return builder.ToString();
@@ -109,8 +206,156 @@ namespace SunDofus.DataRecords
                 builder.Append(Utilities.Basic.DeciToHex(Color)).Append("|");
                 builder.Append(Utilities.Basic.DeciToHex(Color2)).Append("|");
                 builder.Append(Utilities.Basic.DeciToHex(Color3)).Append("||");
-                //builder.Append(GetItems()).Append("|");         Items ToString separate with ;
-                builder.Append("|");
+                builder.Append(GetItems()).Append("|");
+            }
+
+            return builder.ToString();
+        }
+
+        public string PatternGuild()
+        {
+            var member = Guild.Members.First(x => x.Character == this);
+
+            StringBuilder builder = new StringBuilder();
+            {
+                builder.Append(ID).Append(";");
+                builder.Append(Name).Append(";");
+                builder.Append(Level).Append(";");
+                builder.Append(Skin).Append(";");
+                builder.Append(member.Rank).Append(";");
+                builder.Append(member.ExpGaved).Append(";");
+                builder.Append(member.ExpGived).Append(";");
+                builder.Append(member.Rights).Append(";");
+                builder.Append((IsConnected ? "1" : "0")).Append(";");
+                builder.Append(Faction.ID).Append(";0");
+            }
+
+            return builder.ToString();
+        }
+
+        public string PatternDisplayChar()
+        {
+            StringBuilder builder = new StringBuilder();
+            {
+                builder.Append(MapCell).Append(";");
+                builder.Append(Dir).Append(";0;");
+                builder.Append(ID).Append(";");
+                builder.Append(Name).Append(";");
+                builder.Append(Class).Append(";");
+                builder.Append(Skin).Append("^").Append(Size).Append(";");
+                builder.Append(Sex).Append(";").Append(Faction.AlignementInfos).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color2)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color3)).Append(";");
+                builder.Append(GetItemsPos()).Append(";"); // Items
+                builder.Append("0;"); //Aura
+                builder.Append(";;");
+
+                if (Guild != null && Guild.Members.Count >= Utilities.Config.GetInt32("MINMEMBERS_TOWATCHOUT_GUILDS"))
+                    builder.Append(Guild.Name).Append(";").Append(Guild.Emblem);
+                else
+                    builder.Append(";");
+
+                builder.Append(";0;");
+                builder.Append(";"); // Mount
+            }
+
+            return builder.ToString();
+        }
+
+        public string PatternFightDisplayChar()
+        {
+            StringBuilder builder = new StringBuilder();
+            {
+                builder.Append(Fighter.Cell).Append(";");
+                builder.Append("1").Append(";0;");
+                builder.Append(ID).Append(";");
+                builder.Append(Name).Append(";");
+                builder.Append(Class).Append(";");
+                builder.Append(Skin).Append("^").Append(Size).Append(";");
+                builder.Append(Sex).Append(";");
+                builder.Append(Level).Append(";");
+                builder.Append(Faction.AlignementInfos).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color2)).Append(";");
+                builder.Append(Utilities.Basic.DeciToHex(Color3)).Append(";");
+                builder.Append(GetItemsPos()).Append(";");
+                builder.Append(Life).Append(";");
+                builder.Append(6).Append(";").Append(3).Append(";");
+                builder.Append("0;0;0;0;0;");
+                builder.Append("0;0;");
+                builder.Append(Fighter.Team.ID).Append(";;");
+            }
+
+            return builder.ToString();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder("As");
+            {
+                builder.Append(Exp).Append(",");
+                builder.Append(Entities.Requests.LevelsRequests.ReturnLevel(Level).Character).Append(",");
+                builder.Append(Entities.Requests.LevelsRequests.ReturnLevel(Level + 1).Character).Append("|");
+                builder.Append(Kamas).Append("|");
+                builder.Append(CharactPoint).Append("|");
+                builder.Append(SpellPoint).Append("|");
+                builder.Append(Faction.ToString()).Append("|");
+                builder.Append(Life).Append(",");
+                builder.Append(Stats.GetStat(StatEnum.MaxLife).Total).Append("|");
+                builder.Append(Energy).Append(",10000|");
+                builder.Append(Stats.GetStat(StatEnum.Initiative).Total).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Prospection).Total).Append("|");
+
+                builder.Append(Stats.GetStat(StatEnum.MaxAP).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.MaxMP).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Force).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Vitalite).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Sagesse).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Chance).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Agilite).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Intelligence).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.RP).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.InvocationMax).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Damage).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.DamagePhysic).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.DamageMagic).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.DamagePercent).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.Heal).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.DamagePiege).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.DamagePiegePercent).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReflectDamage).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.DamageCritic).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.EchecCritic).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.EsquivePA).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.EsquivePM).ToString()).Append("|");
+
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamageNeutre).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentNeutre).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePvPNeutre).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentPvPNeutre).ToString()).Append("|");
+
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamageTerre).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentTerre).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePvPTerre).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentPvPTerre).ToString()).Append("|");
+
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamageEau).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentEau).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePvPEau).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentPvPEau).ToString()).Append("|");
+
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamageAir).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentAir).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePvPAir).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentPvPAir).ToString()).Append("|");
+
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamageFeu).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentFeu).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePvPFeu).ToString()).Append("|");
+                builder.Append(Stats.GetStat(StatEnum.ReduceDamagePercentPvPFeu).ToString()).Append("|");
+
+                builder.Append("1");
             }
 
             return builder.ToString();
@@ -120,7 +365,41 @@ namespace SunDofus.DataRecords
 
         #region Stats
 
+        public void SendPods()
+        {
+            NClient.Send(string.Format("Ow{0}|{1}", Pods, Stats.GetStat(StatEnum.MaxPods).Total));
+        }
 
+        public void AddLife(int life)
+        {
+            if (Life == Stats.GetStat(StatEnum.MaxLife).Total)
+                NClient.SendMessage("Im119");
+
+            else if ((Life + life) > Stats.GetStat(StatEnum.MaxLife).Total)
+            {
+                NClient.SendMessage(string.Concat("Im01;", (Stats.GetStat(StatEnum.MaxLife).Total - Life)));
+                Life = Stats.GetStat(StatEnum.MaxLife).Total;
+            }
+            else
+            {
+                NClient.SendMessage(string.Concat("Im01;", life));
+                Life += life;
+            }
+        }
+
+        public void ResetVita(string datas)
+        {
+            if (datas == "full")
+            {
+                Life = Stats.GetStat(StatEnum.MaxLife).Total;
+                SendChararacterStats();
+            }
+            else
+            {
+                Life = (Stats.GetStat(StatEnum.MaxLife).Total / (int.Parse(datas) / 100));
+                SendChararacterStats();
+            }
+        }
 
         #endregion
 
@@ -131,6 +410,46 @@ namespace SunDofus.DataRecords
         #endregion
 
         #region Items
+
+        public string GetItemsPos()
+        {
+            var packet = "";
+
+            if (ItemsInventary.ItemsList.Any(x => x.Position == 1))
+                packet += Utilities.Basic.DeciToHex(ItemsInventary.ItemsList.First(x => x.Position == 1).Model.ID);
+
+            packet += ",";
+
+            if (ItemsInventary.ItemsList.Any(x => x.Position == 6))
+                packet += Utilities.Basic.DeciToHex(ItemsInventary.ItemsList.First(x => x.Position == 6).Model.ID);
+
+            packet += ",";
+
+            if (ItemsInventary.ItemsList.Any(x => x.Position == 7))
+                packet += Utilities.Basic.DeciToHex(ItemsInventary.ItemsList.First(x => x.Position == 7).Model.ID);
+
+            packet += ",";
+
+            if (ItemsInventary.ItemsList.Any(x => x.Position == 8))
+                packet += Utilities.Basic.DeciToHex(ItemsInventary.ItemsList.First(x => x.Position == 8).Model.ID);
+
+            packet += ",";
+
+            if (ItemsInventary.ItemsList.Any(x => x.Position == 15))
+                packet += Utilities.Basic.DeciToHex(ItemsInventary.ItemsList.First(x => x.Position == 15).Model.ID);
+
+            return packet;
+        }
+
+        public string GetItems()
+        {
+            return string.Join(";", ItemsInventary.ItemsList);
+        }
+
+        public string GetItemsToSave()
+        {
+            return (string.Join(";", from x in ItemsInventary.ItemsList select x.SaveString()));
+        }
 
         public Character Client { get; set; }
         public List<CharacterItem> ItemsList { get; set; }
@@ -675,6 +994,7 @@ namespace SunDofus.DataRecords
 
         #region State
 
+        public bool IsConnected { get; set; }
         public bool OnMove { get; set; }
         public bool OnExchange { get; set; }
         public bool OnExchangePanel { get; set; }
@@ -726,24 +1046,49 @@ namespace SunDofus.DataRecords
 
         #region Channels
         
-        public List<Channel> Channels { get; set; }
-        public Character Client { get; set; }
-
-        public CharacterChannels(Character client)
+        public long TimeTrade()
         {
-            Client = client;
-            Channels = new List<Channel>();
+            return (long)Math.Ceiling((double)((m_QuotaTrade - Environment.TickCount) / 1000));
+        }
 
-            AddChannel('*', true);
-            AddChannel('#', true);
-            AddChannel('$', true);
-            AddChannel('p', true);
-            AddChannel('%', true);
-            AddChannel('i', true);
-            AddChannel(':', true);
-            AddChannel('?', true);
-            AddChannel('!', true);
-            AddChannel('^', true);
+        public long TimeRecruitment()
+        {
+            return (long)Math.Ceiling((double)((m_QuotaRecruitment - Environment.TickCount) / 1000));
+        }
+
+        public long TimeSmiley()
+        {
+            return (long)Math.Ceiling((double)((quotaSmiley - Environment.TickCount) / 1000));
+        }
+
+        public bool CanSendinTrade()
+        {
+            return (TimeTrade() <= 0 ? true : false);
+        }
+
+        public bool CanSendinRecruitment()
+        {
+            return (TimeRecruitment() <= 0 ? true : false);
+        }
+
+        public bool CanSendinSmiley()
+        {
+            return TimeSmiley() <= 0;
+        }
+
+        public void RefreshTrade()
+        {
+            m_QuotaTrade = Environment.TickCount + Utilities.Config.GetInt64("ANTISPAMTRADE");
+        }
+
+        public void RefreshRecruitment()
+        {
+            m_QuotaRecruitment = Environment.TickCount + Utilities.Config.GetInt64("ANTISPAMRECRUITMENT");
+        }
+
+        public void RefreshSmiley()
+        {
+            quotaSmiley = Environment.TickCount + 1000;
         }
 
         public void AddChannel(char head, bool state)
@@ -770,36 +1115,30 @@ namespace SunDofus.DataRecords
 
         #region Chats
         
-        public static void SendGeneralMessage(GameClient client, string message)
+        public void SendGeneralMessage(string message)
         {
-            if (client.Player.GetMap() == null) 
+            if(Map == null)
                 return;
 
-            if (message.Substring(0, 1) == ".")
-            {
-                //client.Commander.ParseChatCommand(message.Substring(1));
-                return;
-            }
-
-            client.Player.GetMap().Send(string.Format("cMK|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
+            Player.Map.Send(string.Format("cMK|{0}|{1}|{2}", Player.ID, Player.Name, message));
         }
 
-        public static void SendIncarnamMessage(GameClient client, string message)
+        public void SendIncarnamMessage(string message)
         {
-            if (!client.Player.IsInIncarnam || client.Player.Level > 30)
+            if (!Player.IsInIncarnam || Player.Level > 30)
             {
-                client.Send("Im0139");
+                Send("Im0139");
                 return;
             }
 
             foreach (GameClient character in Servers.GameServer.Clients.Where
                 (x => (x as GameClient).Authentified == true && (x as GameClient).Player.IsInIncarnam))
             {
-                character.Send(string.Format("cMK^|{0}|{1}|{2}", client.Player.ID, client.Player.Name, message));
+                character.Send(string.Format("cMK^|{0}|{1}|{2}", Player.ID, Player.Name, message));
             }
         }
 
-        public static void SendPrivateMessage(GameClient client, string receiver, string message)
+        public void SendPrivateMessage(string receiver, string message)
         {
             if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.Name == receiver))
             {
@@ -815,7 +1154,7 @@ namespace SunDofus.DataRecords
             }
         }
 
-        public static void SendTradeMessage(GameClient client, string message)
+        public void SendTradeMessage(string message)
         {
             if (client.Player.CanSendinTrade() == true)
             {
@@ -828,7 +1167,7 @@ namespace SunDofus.DataRecords
                 client.Send(string.Concat("Im0115;", client.Player.TimeTrade()));
         }
 
-        public static void SendRecruitmentMessage(GameClient client, string message)
+        public void SendRecruitmentMessage(string message)
         {
             if (client.Player.CanSendinRecruitment() == true)
             {
@@ -841,7 +1180,7 @@ namespace SunDofus.DataRecords
                 client.Send(string.Concat("Im0115;", client.Player.TimeRecruitment()));
         }
 
-        public static void SendFactionMessage(GameClient client, string message)
+        public void SendFactionMessage(string message)
         {
             if (client.Player.Faction.ID != 0 && client.Player.Faction.Level >= 3)
             {
@@ -852,7 +1191,7 @@ namespace SunDofus.DataRecords
                 client.Send("BN");
         }
 
-        public static void SendPartyMessage(GameClient client, string message)
+        public void SendPartyMessage(string message)
         {
             if (client.Player.State.Party != null)
             {
@@ -863,7 +1202,7 @@ namespace SunDofus.DataRecords
                 client.Send("BN");
         }
 
-        public static void SendGuildMessage(GameClient client, string message)
+        public void SendGuildMessage(string message)
         {
             if (client.Player.Guild != null)
             {
@@ -874,7 +1213,7 @@ namespace SunDofus.DataRecords
                 client.Send("BN");
         }
 
-        public static void SendAdminMessage(GameClient client, string message)
+        public void SendAdminMessage(string message)
         {
             if (client.Infos.GMLevel > 0)
             {
@@ -963,6 +1302,100 @@ namespace SunDofus.DataRecords
         public bool HasJob(int id)
         {
             return Jobs.Any(x => x.ID == id);
+        }
+
+        #endregion
+
+        #region Map
+
+        public void LoadMap()
+        {
+            if (Entities.Requests.MapsRequests.MapsList.Any(x => x.Model.ID == this.MapID))
+            {
+                var map = Entities.Requests.MapsRequests.MapsList.First(x => x.Model.ID == this.MapID);
+
+                if (Utilities.Config.GetBool("DEBUG") & map.Triggers.Count == 0)
+                    SunDofus.World.Entities.Requests.TriggersRequests.LoadTriggers(MapID);
+
+                NClient.Send(string.Format("GDM|{0}|{1}|{2}", map.Model.ID, map.Model.Date, map.Model.Key));
+
+                if (this.State.IsFollow)
+                {
+                    foreach (var character in this.State.Followers)
+                        character.NClient.Send(string.Format("IC{0}|{1}", GetMap().Model.PosX, GetMap().Model.PosY));
+                }
+            }
+        }
+
+        public bool IsInIncarnam
+        {
+            get
+            {
+                var map = GetMap();
+
+                return map.Model.SubArea == 440 || map.Model.SubArea == 442 || map.Model.SubArea == 443 ||
+                    map.Model.SubArea == 444 || map.Model.SubArea == 445 || map.Model.SubArea == 446 ||
+                    map.Model.SubArea == 449 || map.Model.SubArea == 450;
+            }
+        }
+
+        public void TeleportNewMap(int _mapID, int _cell)
+        {
+            NClient.Send(string.Format("GA;2;{0};", ID));
+
+            GetMap().DelPlayer(this);
+            var map = Entities.Requests.MapsRequests.MapsList.First(x => x.Model.ID == _mapID);
+
+            MapID = map.Model.ID;
+            MapCell = _cell;
+
+            LoadMap();
+        }
+
+        public void Sit()
+        {
+            State.IsSitted = !State.IsSitted;
+
+            if (State.IsSitted)
+            {
+                State.SitStartTime = Environment.TickCount;
+
+                NClient.Send("ILS1000");
+            }
+            else
+            {
+                int regenerated = (int)(Environment.TickCount - State.SitStartTime) / 1000;
+                int missing = Stats.GetStat(StatEnum.MaxLife).Total - Life;
+
+                if (regenerated > missing)
+                    regenerated = missing;
+
+                NClient.Player.Life += regenerated;
+
+                NClient.Send("ILF" + regenerated);
+                NClient.Send("ILS360000");
+            }
+        }
+
+        public Maps.Map GetMap()
+        {
+            return Entities.Requests.MapsRequests.MapsList.First(x => x.Model.ID == this.MapID);
+        }
+
+        #endregion
+
+        #region Params
+
+        public string GetParam(string paramName)
+        {
+            switch (paramName)
+            {
+                case "kamas":
+                    return Kamas.ToString();
+
+                default:
+                    return "";
+            }
         }
 
         #endregion

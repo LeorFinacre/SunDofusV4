@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SunDofus.Game.Jobs
+namespace SunDofus.DataRecords
 {
-    enum JobOptionParams
+    class DB_Trigger
     {
-        PaidService = 1,
-        FreeIfFailed = 2,
-        ResourcesNeeded = 4
     }
 }

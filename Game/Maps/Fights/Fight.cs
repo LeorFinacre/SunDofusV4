@@ -5,14 +5,9 @@ using System.Text;
 using SunDofus.World.Game.Characters;
 using System.Threading;
 using System.Runtime.CompilerServices;
-using SunDofus.World.Game.Characters.Spells;
 using SunDofus.Utilities;
-using SunDofus.World.Game.Effects;
-using SunDofus.World.Game.Maps.Fights.Effects;
-using SunDofus.World.Game.Characters.Stats;
-using SunDofus.World.Game.Characters.Items;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     #region Enums
 

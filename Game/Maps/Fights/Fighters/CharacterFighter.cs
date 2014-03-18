@@ -5,7 +5,7 @@ using System.Text;
 using SunDofus.World.Game.Characters;
 using SunDofus.World.Game.Characters.Stats;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     class CharacterFighter : Fighter
     {

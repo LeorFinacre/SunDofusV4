@@ -76,6 +76,9 @@ namespace SunDofus
         public static List<DB_Level> Levels;
         public static List<DB_Map> Maps;
 
+        public static List<DB_AccountEnemy> Enemies;
+        public static List<DB_AccountFriend> Friends;
+
         public static List<DB_Character> Characters;
         public static List<DB_CharacterFaction> CharactersFactions;
         public static List<DB_CharacterItem> CharactersItems;
@@ -106,6 +109,20 @@ namespace SunDofus
         {
             MyConsole.StartLoading("Loading bannedIPs");
             BannedIPs = DB_BannedIP.Find<DB_BannedIP>();
+            MyConsole.StopLoading();
+        }
+
+        public static void LoadEnemies()
+        {
+            MyConsole.StartLoading("Loading enemies");
+            Enemies = DB_AccountEnemy.Find<DB_AccountEnemy>();
+            MyConsole.StopLoading();
+        }
+
+        public static void LoadFriends()
+        {
+            MyConsole.StartLoading("Loading friends");
+            Friends = DB_AccountFriend.Find<DB_AccountFriend>();
             MyConsole.StopLoading();
         }
 

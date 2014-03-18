@@ -6,95 +6,61 @@ using System.Threading.Tasks;
 using SilverSock;
 using SunDofus.DataRecords;
 using SunDofus.Network.Parsers;
-using SunDofus.World.Game.Characters;
 
 namespace SunDofus.Network.Clients
 {
     class GameClient : TCPClient
     {
+
+        public bool Authentified { get; set; }
+
+        public DB_Character Player { get; set; }
+        public List<DB_AccountFriend> Friends { get; set; }
+        public List<DB_AccountEnemy> Enemies { get; set; }
+
+        public DB_Account Account { get; set; }
+
+        private object m_Locker;
+        private GameParser m_Parser;
+
         public GameClient(SilverSocket s)
             : base(s)
         {
-            locker = new object();
+            m_Locker = new object();
+            Authentified = false;
 
             this.DisconnectedSocket += new DisconnectedSocketHandler(this.Disconnected);
             this.ReceivedDatas += new ReceiveDatasHandler(this.ReceivedPackets);
 
-            Characters = new List<SunDofus.World.Game.Characters.Character>();
-            Friends = new List<string>();
-            Enemies = new List<string>();
+            Friends = new List<DB_AccountFriend>();
+            Enemies = new List<DB_AccountEnemy>();
 
-            //Commander = new RealmCommander(this);
-            parser = new GameParser(this);
-
-            Player = null;
-            Authentified = false;
+            m_Parser = new GameParser(this);
 
             Send("HG");
         }
 
-        public bool Authentified { get; set; }
-        public bool IsInQueue { get; set; }
-
-        public DB_Character Player { get; set; }
-        public List<Character> Characters { get; set; }
-
-        public List<string> Friends { get; set; }
-        public List<string> Enemies { get; set; }
-
-        public DB_Account Infos { get; set; }
-        //public RealmCommander Commander { get; set; }
-
-        private object locker;
-        private GameParser parser;
-
         public void Send(string message)
         {
-            lock (locker)
+            lock (m_Locker)
                 this.SendBytes(message);
 
             Utilities.Logger.Write(Utilities.Logger.LoggerType.Debug, "Sent to <{0}> : {1}", IP, message);
         }
 
-        public void OutOfQueue()
-        {
-            IsInQueue = false;
-            parser.SendCharacterList("");
-        }
-
-        public void ParseCharacters()
-        {
-            //foreach (var name in Infos.Characters)
-            //{
-            //    if (!SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.Name == name))
-            //    {
-            //        //delete character with name 'name'
-            //        continue;
-            //    }
-
-            //    var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First(x => x.Name == name);
-            //    Characters.Add(character);
-            //}
-        }
-
         public void SendGifts()
         {
-            //Infos.ParseGifts();
+            foreach(var gift in DB_Gift.Find<DB_Gift>(string.Concat("target = ", Account.ID)))
+            {
+                var item = new SunDofus.World.Game.Characters.Items.CharacterItem(Entities.Requests.ItemsRequests.ItemsList.First(x => x.ID == gift.ItemID));
 
-            //foreach (var gift in Infos.Gifts)
-            //{
-            //    if (!Entities.Requests.ItemsRequests.ItemsList.Any(x => x.ID == gift.ItemID))
-            //        return;
+                item.GeneratItem();
 
-            //    var item = new SunDofus.World.Game.Characters.Items.CharacterItem(Entities.Requests.ItemsRequests.ItemsList.First(x => x.ID == gift.ItemID));
+                gift.Item = item;
 
-            //    item.GeneratItem();
-
-            //    gift.Item = item;
-
-            //    this.Send(string.Format("Ag1|{0}|{1}|{2}|{3}|{4}~{5}~{6}~~{7};", gift.ID, gift.Title, gift.Message, (gift.Image != "" ? gift.Image : "http://s2.e-monsite.com/2009/12/26/04/167wpr7.png"),
-            //       Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Quantity), item.EffectsInfos()));
-            //}
+                this.Send(string.Format("Ag1|{0}|{1}|{2}|{3}|{4}~{5}~{6}~~{7};", gift.ID, gift.Title, gift.Message, (gift.Image != "" ? gift.Image : "http://s2.e-monsite.com/2009/12/26/04/167wpr7.png"),
+                   Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Model.ID), Utilities.Basic.DeciToHex(item.Quantity), item.EffectsInfos()));
+            }
         }
 
         public void SendConsoleMessage(string message, int color = 1)
@@ -111,8 +77,8 @@ namespace SunDofus.Network.Clients
         {
             Utilities.Logger.Write(Utilities.Logger.LoggerType.Debug, "Receive datas from @<{0}>@ : {1}", IP, datas);
 
-            lock (locker)
-                parser.Parse(datas);
+            lock (m_Locker)
+                m_Parser.Parse(datas);
         }
 
         private void Disconnected()
@@ -121,123 +87,349 @@ namespace SunDofus.Network.Clients
 
             if (Authentified == true)
             {
-                //Update to connected 0
+                Account.IsConnected = 0;
+                Account.Update();
 
                 if (Player != null)
                 {
-                    Player.GetMap().DelPlayer(Player);
+                    Player.Map.DelPlayer(Player);
                     Player.IsConnected = false;
+                    Player.SetClient(null);
 
-                    if (Player.State.OnExchange)
-                        SunDofus.World.Game.Exchanges.ExchangesManager.LeaveExchange(Player);
+                    if (Player.OnExchange)
+                        SunDofus.Game.Exchanges.ExchangesManager.LeaveExchange(Player);
 
-                    if (Player.State.OnWaitingGuild)
+                    if (Player.OnWaitingGuild)
                     {
-                        if (Player.State.ReceiverInviteGuild != -1 || Player.State.SenderInviteGuild != -1)
+                        if (Player.ReceiverInviteGuild != -1 || Player.SenderInviteGuild != -1)
                         {
-                            if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any
-                                (x => x.ID == (Player.State.ReceiverInviteGuild != -1 ? Player.State.ReceiverInviteGuild : Player.State.SenderInviteGuild)))
+                            if (Servers.Characters.Any(x => x.ID == (Player.ReceiverInviteGuild != -1 ? Player.ReceiverInviteGuild : Player.SenderInviteGuild)))
                             {
 
-                                var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First
-                                    (x => x.ID == (Player.State.ReceiverInviteGuild != -1 ? Player.State.ReceiverInviteGuild : Player.State.SenderInviteGuild));
+                                var character = Servers.Characters.First(x => x.ID == (Player.ReceiverInviteGuild != -1 ? Player.ReceiverInviteGuild : Player.SenderInviteGuild));
                                 if (character.IsConnected)
                                 {
-                                    character.State.SenderInviteGuild = -1;
-                                    character.State.ReceiverInviteGuild = -1;
-                                    character.State.OnWaitingGuild = false;
-                                    character.NClient.Send("gJEc");
+                                    character.SenderInviteGuild = -1;
+                                    character.ReceiverInviteGuild = -1;
+                                    character.OnWaitingGuild = false;
+                                    character.Send("gJEc");
                                 }
 
-                                Player.State.ReceiverInviteGuild = -1;
-                                Player.State.SenderInviteGuild = -1;
-                                Player.State.OnWaitingGuild = false;
+                                Player.ReceiverInviteGuild = -1;
+                                Player.SenderInviteGuild = -1;
+                                Player.OnWaitingGuild = false;
                             }
                         }
                     }
 
-                    if (Player.State.OnWaitingParty)
+                    if (Player.OnWaitingParty)
                     {
-                        if (Player.State.ReceiverInviteParty != -1 || Player.State.SenderInviteParty != -1)
+                        if (Player.ReceiverInviteParty != -1 || Player.SenderInviteParty != -1)
                         {
-                            if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any
-                                (x => x.ID == (Player.State.ReceiverInviteParty != -1 ? Player.State.ReceiverInviteParty : Player.State.SenderInviteParty)))
+                            if (Servers.Characters.Any(x => x.ID == (Player.ReceiverInviteParty != -1 ? Player.ReceiverInviteParty : Player.SenderInviteParty)))
                             {
 
-                                var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First
-                                    (x => x.ID == (Player.State.ReceiverInviteParty != -1 ? Player.State.ReceiverInviteParty : Player.State.SenderInviteParty));
+                                var character = Servers.Characters.First(x => x.ID == (Player.ReceiverInviteParty != -1 ? Player.ReceiverInviteParty : Player.SenderInviteParty));
                                 if (character.IsConnected)
                                 {
-                                    character.State.SenderInviteParty = -1;
-                                    character.State.ReceiverInviteParty = -1;
-                                    character.State.OnWaitingParty = false;
-                                    character.NClient.Send("PR");
+                                    character.SenderInviteParty = -1;
+                                    character.ReceiverInviteParty = -1;
+                                    character.OnWaitingParty = false;
+                                    character.Send("PR");
                                 }
 
-                                Player.State.ReceiverInviteParty = -1;
-                                Player.State.SenderInviteParty = -1;
-                                Player.State.OnWaitingParty = false;
+                                Player.ReceiverInviteParty = -1;
+                                Player.SenderInviteParty = -1;
+                                Player.OnWaitingParty = false;
                             }
                         }
                     }
 
-                    if (Player.State.Party != null)
-                        Player.State.Party.LeaveParty(Player.Name);
+                    if (Player.Party != null)
+                        Player.Party.LeaveParty(Player.Name);
 
-                    if (Player.State.IsFollowing)
+                    if (Player.IsFollowing)
                     {
-                        if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.State.Followers.Contains(Player) && x.ID == Player.State.FollowingID))
-                            SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First(x => x.ID == Player.State.FollowingID).State.Followers.Remove(Player);
+                        if (Servers.Characters.Any(x => x.Followers.Contains(Player) && x.ID == Player.FollowingID))
+                            Servers.Characters.First(x => x.ID == Player.FollowingID).Followers.Remove(Player);
                     }
 
-                    if (Player.State.IsFollow)
+                    if (Player.IsFollow)
                     {
-                        Player.State.Followers.Clear();
-                        Player.State.IsFollow = false;
+                        Player.Followers.Clear();
+                        Player.IsFollow = false;
                     }
 
-                    if (Player.State.IsChallengeAsked)
+                    if (Player.IsChallengeAsked)
                     {
-                        if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.State.ChallengeAsked == Player.ID))
+                        if (Servers.Characters.Any(x => x.ChallengeAsked == Player.ID))
                         {
-                            var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First(x => x.State.ChallengeAsked == Player.ID);
+                            var character = Servers.Characters.First(x => x.ChallengeAsked == Player.ID);
 
-                            Player.State.ChallengeAsker = -1;
-                            Player.State.IsChallengeAsked = false;
+                            Player.ChallengeAsker = -1;
+                            Player.IsChallengeAsked = false;
 
-                            character.State.ChallengeAsked = -1;
-                            character.State.IsChallengeAsker = false;
+                            character.ChallengeAsked = -1;
+                            character.IsChallengeAsker = false;
 
-                            character.NClient.Send(string.Format("GA;902;{0};{1}", character.ID, Player.ID));
+                            character.Send(string.Format("GA;902;{0};{1}", character.ID, Player.ID));
                         }
                     }
 
-                    if (Player.State.IsChallengeAsker)
+                    if (Player.IsChallengeAsker)
                     {
-                        if (SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.Any(x => x.State.ChallengeAsker == Player.ID))
+                        if (Servers.Characters.Any(x => x.ChallengeAsker == Player.ID))
                         {
-                            var character = SunDofus.World.Entities.Requests.CharactersRequests.CharactersList.First(x => x.State.ChallengeAsker == Player.ID);
+                            var character = Servers.Characters.First(x => x.ChallengeAsker == Player.ID);
 
-                            Player.State.ChallengeAsked = -1;
-                            Player.State.IsChallengeAsker = false;
+                            Player.ChallengeAsked = -1;
+                            Player.IsChallengeAsker = false;
 
-                            character.State.ChallengeAsker = -1;
-                            character.State.IsChallengeAsked = false;
+                            character.ChallengeAsker = -1;
+                            character.IsChallengeAsked = false;
 
-                            character.NClient.Send(string.Format("GA;902;{0};{1}", character.ID, Player.ID));
+                            character.Send(string.Format("GA;902;{0};{1}", character.ID, Player.ID));
                         }
                     }
                 }
             }
 
-            //if (Authentified)
-            //{
-            //    lock (ServersHandler.RealmServer.PseudoClients)
-            //        ServersHandler.RealmServer.PseudoClients.Remove(Infos.Pseudo);
-            //}
-
             lock (Servers.GameServer.Clients)
                 Servers.GameServer.Clients.Remove(this);
         }
+
+        #region Friends
+
+        public bool WillNotifyWhenConnected { get; set; }
+
+        public void SendFriends()
+        {
+            var packet = "FL|";
+
+            foreach (var friend in Friends)
+            {
+                if (Servers.GameServer.Clients.Any(x => (x as GameClient).Account.ID == friend.AccountID && (x as GameClient).Player != null))
+                {
+                    packet = string.Concat(packet, friend.TargetPseudo);
+
+                    var charact = (Servers.GameServer.Clients.First(x => (x as GameClient).Account.ID == friend.AccountID && (x as GameClient).Player != null) as GameClient).Player;
+                    var client = (Servers.GameServer.Clients.First(x => (x as GameClient).Account.ID == friend.AccountID && (x as GameClient).Player != null) as GameClient);
+
+                    bool seeLevel = (client.Friends.Any(x => x.TargetID == Account.ID) ? true : false);
+
+                    packet = string.Format("{0};?;{1};{2};{3};{4};{5};{6}|", packet, charact.Name, (seeLevel ? charact.Level.ToString() : "?"), (seeLevel ? charact.Faction.FactionID.ToString() : "-1"),
+                        charact.Class.ToString(), charact.Sex.ToString(), charact.Skin.ToString());
+                }
+                else
+                    packet = string.Concat(packet, friend.TargetPseudo, "|");
+            }
+
+            Send(packet.Substring(0, packet.Length - 1));
+        }
+
+        public void AddFriend(string datas)
+        {
+            if (Servers.Characters.Any(x => x.Name == datas))
+            {
+                var character = Servers.Characters.First(x => x.Name == datas);
+
+                if (Servers.GameServer.Clients.Any(x => (x as GameClient).Account.ID == character.ID))
+                {
+                    var client = Servers.GameServer.Clients.First(x => (x as GameClient).Account.ID == character.ID) as GameClient;
+
+                    if (!Friends.Any(x => x.TargetID == client.Account.ID))
+                    {
+                        var friend = new DB_AccountFriend()
+                        {
+                            ID = Servers.Friends.Count > 0 ? Servers.Friends.OrderBy(x => x.ID).ToArray()[0].ID + 1 : 1,
+                            AccountID = client.Account.ID,
+                            TargetID = Account.ID,
+                            TargetPseudo = Account.Pseudo
+                        };
+
+                        friend.Insert();
+
+                        lock (Friends)
+                            Friends.Add(friend);
+
+                        bool seeLevel = (client.Friends.Any(x => x.TargetID == Account.ID) ? true : false);
+
+                        var packet = string.Format("{0};?;{1};{2};{3};{4};{5};{6}|", Account.Pseudo, Player.Name, (seeLevel ? Player.Level.ToString() : "?"), (seeLevel ? Player.Faction.FactionID.ToString() : "-1"),
+                            Player.Class, Player.Sex, Player.Skin);
+
+                        Send(string.Concat("FAK", packet));
+                    }
+                    else
+                        Send("FAEa");
+                }
+                else
+                    Send("FAEf");
+            }
+            else
+                Send("FAEf");
+        }
+
+        public void RemoveFriend(string datas)
+        {
+            var name = datas.Substring(1);
+
+            if (datas.Substring(0, 1) == "*")
+            {
+                if (Friends.Any(x => x.TargetPseudo == name))
+                {
+                    var friend = Friends.First(x => x.TargetPseudo == name);
+
+                    lock (Friends)
+                        Friends.Remove(friend);
+
+                    friend.Delete();
+
+                    Send("FDK");
+                }
+                else
+                    Send("FDEf");
+            }
+            else if (datas.Substring(0, 1) == "%")
+            {
+                if(Servers.Characters.Any(x => x.Name == name))
+                {
+                    var character = Servers.Characters.First(x => x.Name == name);
+
+                    if (Friends.Any(x => x.AccountID == character.AccountID))
+                    {
+                        var friend = Friends.First(x => x.AccountID == character.AccountID);
+
+                        lock (Friends)
+                            Friends.Remove(friend);
+
+                        friend.Delete();
+
+                        Send("FDK");
+                    }
+                    else
+                        Send("FDEf");
+                }
+                else
+                    Send("FDEf");
+            }
+        }
+
+        #endregion
+
+        #region Enemies
+
+        public void SendEnemies()
+        {
+            var packet = "iL|";
+
+            foreach (var enemy in Enemies)
+            {
+                if (Servers.GameServer.Clients.Any(x => (x as GameClient).Account.ID == enemy.AccountID && (x as GameClient).Player != null))
+                {
+                    packet = string.Concat(packet, enemy.TargetPseudo);
+
+                    var charact = (Servers.GameServer.Clients.First(x => (x as GameClient).Account.ID == enemy.AccountID && (x as GameClient).Player != null) as GameClient).Player;
+                    var client = (Servers.GameServer.Clients.First(x => (x as GameClient).Account.ID == enemy.AccountID && (x as GameClient).Player != null) as GameClient);
+
+                    bool seeLevel = (client.Friends.Any(x => x.TargetID == Account.ID) ? true : false);
+
+                    packet = string.Format("{0};?;{1};{2};{3};{4};{5};{6}|", packet, charact.Name, (seeLevel ? charact.Level.ToString() : "?"), (seeLevel ? charact.Faction.FactionID.ToString() : "-1"),
+                        charact.Class.ToString(), charact.Sex.ToString(), charact.Skin.ToString());
+                }
+                else
+                    packet = string.Concat(packet, enemy.TargetPseudo, "|");
+            }
+
+            Send(packet.Substring(0, packet.Length - 1));
+        }
+
+        public void AddEnemy(string datas)
+        {
+            if (Servers.Characters.Any(x => x.Name == datas))
+            {
+                var character = Servers.Characters.First(x => x.Name == datas);
+
+                if (Servers.GameServer.Clients.Any(x => (x as GameClient).Account.ID == character.ID))
+                {
+                    var client = Servers.GameServer.Clients.First(x => (x as GameClient).Account.ID == character.ID) as GameClient;
+
+                    if (!Enemies.Any(x => x.TargetID == client.Account.ID))
+                    {
+                        var enemy = new DB_AccountEnemy()
+                        {
+                            ID = Servers.Enemies.Count > 0 ? Servers.Enemies.OrderBy(x => x.ID).ToArray()[0].ID + 1 : 1,
+                            AccountID = client.Account.ID,
+                            TargetID = Account.ID,
+                            TargetPseudo = Account.Pseudo
+                        };
+
+                        enemy.Insert();
+
+                        lock (Enemies)
+                            Enemies.Add(enemy);
+
+                        bool seeLevel = (client.Friends.Any(x => x.TargetID == Account.ID) ? true : false);
+
+                        var packet = string.Format("{0};2;{1};36;10;0;100.FL.", Account.Pseudo, Player.Name, (seeLevel ? Player.Level.ToString() : "?"), (seeLevel ? Player.Faction.FactionID.ToString() : "-1"),
+                            Player.Class, Player.Sex, Player.Skin);
+
+                        Send(string.Concat("iAK", packet));
+                    }
+                    else
+                        Send("iAEA");
+                }
+                else
+                    Send("FAEf");
+            }
+            else
+                Send("FAEf");
+        }
+
+        public void RemoveEnemy(string datas)
+        {
+            var name = datas.Substring(1);
+
+            if (datas.Substring(0, 1) == "*")
+            {
+                if (Enemies.Any(x => x.TargetPseudo == name))
+                {
+                    var enemy = Enemies.First(x => x.TargetPseudo == name);
+
+                    lock (Enemies)
+                        Enemies.Remove(enemy);
+
+                    enemy.Delete();
+
+                    Send("iDK");
+                }
+                else
+                    Send("FDEf");
+            }
+            else if (datas.Substring(0, 1) == "%")
+            {
+                if (Servers.Characters.Any(x => x.Name == name))
+                {
+                    var character = Servers.Characters.First(x => x.Name == name);
+
+                    if (Enemies.Any(x => x.AccountID == character.AccountID))
+                    {
+                        var enemy = Enemies.First(x => x.AccountID == character.AccountID);
+
+                        lock (Enemies)
+                            Enemies.Remove(enemy);
+
+                        enemy.Delete();
+
+                        Send("iDK");
+                    }
+                    else
+                        Send("FDEf");
+                }
+                else
+                    Send("FDEf");
+            }
+        }
+
+        #endregion
     }
 }

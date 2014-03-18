@@ -7,10 +7,8 @@ namespace SunDofus.Utilities
 {
     class Basic
     {
-        public static object Locker = new object();
-
-        private static int startTime;
-        private static Random randomizer = new Random();
+        private static int m_StartTime;
+        private static Random m_Randomizer = new Random();
 
         public static List<char> HASH = new List<char>() {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
                 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
@@ -20,11 +18,11 @@ namespace SunDofus.Utilities
         {
             get
             {
-                return (Environment.TickCount - startTime);
+                return (Environment.TickCount - m_StartTime);
             }
             set
             {
-                startTime = value;
+                m_StartTime = value;
             }
         }
 
@@ -56,7 +54,7 @@ namespace SunDofus.Utilities
 
             for (var i = 1; i <= lenght; i++)
             {
-                var randomInt = randomizer.Next(0, HASH.Count);
+                var randomInt = m_Randomizer.Next(0, HASH.Count);
                 str += HASH[randomInt];
             }
 
@@ -84,49 +82,49 @@ namespace SunDofus.Utilities
             return _Crypted;
         }
 
-        private static string _vowels = "aeiouy";
-        private static string _consonants = "bcdfghjklmnpqrstvwxz";
+        private static string m_Vowels = "aeiouy";
+        private static string m_Consonants = "bcdfghjklmnpqrstvwxz";
 
         public static int Rand(int min, int max)
         {
-            return randomizer.Next(min, max + 1);
+            return m_Randomizer.Next(min, max + 1);
         }
 
-        public static string GetVowel
+        public static string GetRandomVowel
         {
             get
             {
-                return _vowels.Substring((Rand(0, _vowels.Length - 1)), 1);
+                return m_Vowels.Substring((Rand(0, m_Vowels.Length - 1)), 1);
             }
         }
 
-        public static string GetConsonant
+        public static string GetRandomConsonant
         {
             get
             {
-                return _consonants.Substring((Rand(0, _consonants.Length - 1)), 1);
+                return m_Consonants.Substring((Rand(0, m_Consonants.Length - 1)), 1);
             }
         }
 
         public static string RandomName()
         {
-            var name = GetConsonant.ToUpper();
-            name += GetVowel;
+            var name = GetRandomConsonant.ToUpper();
+            name += GetRandomVowel;
 
             if (Rand(0, 1) == 0)
-                name += GetVowel;
+                name += GetRandomVowel;
 
-            name += GetConsonant;
+            name += GetRandomConsonant;
 
             if (Rand(0, 1) == 0)
                 name += name[name.Length - 1].ToString();
 
-            name += GetVowel;
+            name += GetRandomVowel;
 
             if (Rand(0, 1) == 0)
             {
-                name += GetConsonant;
-                name += GetVowel;
+                name += GetRandomConsonant;
+                name += GetRandomVowel;
             }
 
             return name;

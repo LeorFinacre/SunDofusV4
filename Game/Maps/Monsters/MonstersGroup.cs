@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 
-namespace SunDofus.World.Game.Maps.Monsters
+namespace SunDofus.Game.Maps.Monsters
 {
     class MonstersGroup
     {

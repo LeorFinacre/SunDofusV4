@@ -6,7 +6,7 @@ using SunDofus.World.Game.Characters;
 using SunDofus.World.Game.Characters.Stats;
 using SunDofus.World.Game.Maps.Fights.Effects;
 
-namespace SunDofus.World.Game.Maps.Fights
+namespace SunDofus.Game.Maps.Fights
 {
     abstract class Fighter
     {

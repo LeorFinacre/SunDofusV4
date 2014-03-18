@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SunDofus.World.Game.Characters
+namespace SunDofus.Game.Characters
 {
     class CharacterParty
     {

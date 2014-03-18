@@ -43,15 +43,18 @@ namespace SunDofus.Network
         public TCPClient(SilverSocket s)
         {
             m_Socket = s;
+
             m_Socket.OnConnected += () =>
             {
                 Connected = true;
             };
+
             m_Socket.OnSocketClosedEvent += () =>
             {
                 Connected = false;
                 OnDisconnectedSocket();
             };
+
             m_Socket.OnDataArrivalEvent += (bytes) =>
             {
                 foreach (var packet in Encoding.UTF8.GetString(bytes).Replace("\x0a", "").Split('\x00').Where(x => x != ""))

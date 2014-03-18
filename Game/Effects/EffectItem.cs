@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SunDofus.World.Game.Characters.Stats;
 
-namespace SunDofus.World.Game.Effects
+namespace SunDofus.Game.Effects
 {
     class EffectItem
     {
