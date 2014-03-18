@@ -14,32 +14,32 @@ namespace SunDofus.Game.Maps
     {
         public int Destination, Direction;
 
-        private string strPath;
-        private int startCell;
-        private int startDir;
-        private bool trigger;
+        private string m_StrPath;
+        private int m_StartCell;
+        private int m_StartDir;
+        private bool m_IsTrigger;
 
         private DB_Map map;
 
         public Pathfinding(string path, DB_Map map, int startCell, int startDir, bool trigger = false)
         {
-            strPath = path;
+            m_StrPath = path;
             this.map = map;
-            this.startCell = startCell;
-            this.startDir = startDir;
-            this.trigger = trigger;
+            this.m_StartCell = startCell;
+            this.m_StartDir = startDir;
+            this.m_IsTrigger = trigger;
         }
 
         public void UpdatePath(string path)
         {
-            strPath = path;
+            m_StrPath = path;
         }
 
         public string GetStartPath
         {
             get
             {
-                return GetDirChar(startDir) + GetCellChars(startCell);
+                return GetDirChar(m_StartDir) + GetCellChars(m_StartCell);
             }
         }
 
@@ -50,19 +50,19 @@ namespace SunDofus.Game.Maps
                 case 'a':
                     return fight ? -1 : caseID + 1;
                 case 'b':
-                    return caseID + map.Model.Width;
+                    return caseID + map.Width;
                 case 'c':
-                    return fight ? -1 : caseID + (map.Model.Width * 2 - 1);
+                    return fight ? -1 : caseID + (map.Width * 2 - 1);
                 case 'd':
-                    return caseID + (map.Model.Width - 1);
+                    return caseID + (map.Width - 1);
                 case 'e':
                     return fight ? -1 : caseID - 1;
                 case 'f':
-                    return caseID - map.Model.Width;
+                    return caseID - map.Width;
                 case 'g':
-                    return fight ? -1 : caseID - (map.Model.Width * 2 - 1);
+                    return fight ? -1 : caseID - (map.Width * 2 - 1);
                 case 'h':
-                    return caseID - map.Model.Width + 1;
+                    return caseID - map.Width + 1;
             }
 
             return -1;
@@ -117,13 +117,13 @@ namespace SunDofus.Game.Maps
 
         public static int GetCellXCoord(DB_Map map, int cellID)
         {
-            int width = map.Model.Width;
+            int width = map.Width;
             return ((cellID - (width - 1) * GetCellYCoord(map, cellID)) / width);
         }
 
         public static int GetCellYCoord(DB_Map map, int cellID)
         {
-            int width = map.Model.Width;
+            int width = map.Width;
             int loc5 = (int)(cellID / ((width * 2) - 1));
             int loc6 = cellID - loc5 * ((width * 2) - 1);
             int loc7 = loc6 % width;
@@ -133,7 +133,7 @@ namespace SunDofus.Game.Maps
 
         public static int GetDirection(DB_Map map, int cell1, int cell2)
         {
-            int[] ListChange = new int[] { 1, map.Model.Width, map.Model.Width * 2 - 1, map.Model.Width - 1, -1, -map.Model.Width, -map.Model.Width * 2 + 1, -(map.Model.Width - 1) };
+            int[] ListChange = new int[] { 1, map.Width, map.Width * 2 - 1, map.Width - 1, -1, -map.Width, -map.Width * 2 + 1, -(map.Width - 1) };
             int Result = cell2 - cell1;
 
             for (int i = 7; i > -1; i--)
@@ -175,25 +175,25 @@ namespace SunDofus.Game.Maps
                     return cell + 1;
 
                 case 1:
-                    return cell + map.Model.Width;
+                    return cell + map.Width;
 
                 case 2:
-                    return cell + (map.Model.Width * 2) - 1;
+                    return cell + (map.Width * 2) - 1;
 
                 case 3:
-                    return cell + map.Model.Width - 1;
+                    return cell + map.Width - 1;
 
                 case 4:
                     return cell - 1;
 
                 case 5:
-                    return cell - map.Model.Width;
+                    return cell - map.Width;
 
                 case 6:
-                    return cell - (map.Model.Width * 2) + 1;
+                    return cell - (map.Width * 2) + 1;
 
                 case 7:
-                    return cell - map.Model.Width + 1;
+                    return cell - map.Width + 1;
 
             }
 
@@ -219,7 +219,7 @@ namespace SunDofus.Game.Maps
                 actuelCell = NextCell(map, actuelCell, direction);
                 backCell = actuelCell;
 
-                if (trigger & map.Triggers.Any(x => x.CellID == backCell))
+                if (m_IsTrigger & map.Triggers.Any(x => x.CellID == backCell))
                     return GetDirChar(direction) + GetCellChars(backCell) + ",0";
             }
 
@@ -229,12 +229,12 @@ namespace SunDofus.Game.Maps
         public string RemakePath()
         {
             var newPath = "";
-            var newCell = GetCellNum(strPath.Substring(strPath.Length - 2, 2));
-            var lastCell = startCell;
+            var newCell = GetCellNum(m_StrPath.Substring(m_StrPath.Length - 2, 2));
+            var lastCell = m_StartCell;
 
-            for (var i = 0; i <= strPath.Length - 1; i += 3)
+            for (var i = 0; i <= m_StrPath.Length - 1; i += 3)
             {
-                var actualCell = strPath.Substring(i, 3);
+                var actualCell = m_StrPath.Substring(i, 3);
                 var lineData = RemakeLine(lastCell, actualCell, newCell).Split(',');
                 newPath += lineData[0];
 
@@ -246,7 +246,7 @@ namespace SunDofus.Game.Maps
 
             Destination = GetCellNum(newPath.Substring(newPath.Length - 2, 2));
             Direction = GetDirNum(newPath.Substring(newPath.Length - 3, 1));
-            strPath = newPath;
+            m_StrPath = newPath;
 
             return GetStartPath + newPath;
         }
@@ -265,12 +265,12 @@ namespace SunDofus.Game.Maps
         public int GetLength()
         {
             var length = 0;
-            var lastCell = startCell;
+            var lastCell = m_StartCell;
             var actualCell = -1;
 
-            for (var i = 0; i <= strPath.Length - 1; i += 3)
+            for (var i = 0; i <= m_StrPath.Length - 1; i += 3)
             {
-                actualCell = GetCellNum(strPath.Substring(i, 3).Substring(1));
+                actualCell = GetCellNum(m_StrPath.Substring(i, 3).Substring(1));
                 length += GetDistanceBetween(map, lastCell, actualCell);
                 lastCell = actualCell;
             }

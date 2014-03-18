@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SunDofus.DataRecords;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,7 @@ namespace SunDofus.Game.Maps.Monsters
         private Timer timer;
         private Dictionary<int, List<int>> mbase;
 
-        public MonstersGroup(Dictionary<int, List<int>> monsters, Map map)
+        public MonstersGroup(Dictionary<int, List<int>> monsters, DB_Map map)
         {
 
             Monsters = new List<Monster>();

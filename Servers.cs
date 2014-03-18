@@ -75,6 +75,8 @@ namespace SunDofus
         public static List<DB_BannedIP> BannedIPs;
         public static List<DB_Level> Levels;
         public static List<DB_Map> Maps;
+        public static List<DB_Zaap> Zaaps;
+        public static List<DB_Zaapis> Zaapis;
 
         public static List<DB_AccountEnemy> Enemies;
         public static List<DB_AccountFriend> Friends;
@@ -163,6 +165,20 @@ namespace SunDofus
             }
             else
                 Logger.Write(Logger.LoggerType.Debug, "No loading maps, debug mode!");
+        }
+
+        public static void LoadZaaps()
+        {
+            MyConsole.StartLoading("Loading zaaps");
+            Zaaps = DB_Zaap.Find<DB_Zaap>();
+            MyConsole.StopLoading();
+        }
+
+        public static void LoadZaapis()
+        {
+            MyConsole.StartLoading("Loading zaaps");
+            Zaapis = DB_Zaapis.Find<DB_Zaapis>();
+            MyConsole.StopLoading();
         }
 
         #endregion

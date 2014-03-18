@@ -33,6 +33,8 @@ namespace SunDofus
                 Servers.LoadBannedIPs();
                 Servers.LoadLevels();
                 Servers.LoadMaps();
+                Servers.LoadZaaps();
+                Servers.LoadZaapis();
                 Servers.LoadCharacters();
                 Servers.LoadFriends();
                 Servers.LoadEnemies();

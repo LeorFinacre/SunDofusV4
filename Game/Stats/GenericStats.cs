@@ -22,12 +22,12 @@ namespace SunDofus.Game.Characters.Stats
             stats.Add(new GenericStat(StatEnum.MaxLife, new EffectEnum[] { }, new EffectEnum[] { }, 50, FormuleMaxLife));
             stats.Add(new GenericStat(StatEnum.MaxPods, new EffectEnum[] { }, new EffectEnum[] { }, 1000, FormuleMaxPods));
 
-            stats.Add(new GenericStat(StatEnum.Vitalite, new EffectEnum[] { EffectEnum.AddVitality, EffectEnum.AddLife }, new EffectEnum[] { EffectEnum.SubVitality }));
-            stats.Add(new GenericStat(StatEnum.Sagesse, new EffectEnum[] { EffectEnum.AddWisdom }, new EffectEnum[] { EffectEnum.SubWisdom }));
-            stats.Add(new GenericStat(StatEnum.Force, new EffectEnum[] { EffectEnum.AddStrength }, new EffectEnum[] { EffectEnum.SubStrength }));
+            stats.Add(new GenericStat(StatEnum.Vitality, new EffectEnum[] { EffectEnum.AddVitality, EffectEnum.AddLife }, new EffectEnum[] { EffectEnum.SubVitality }));
+            stats.Add(new GenericStat(StatEnum.Wisdom, new EffectEnum[] { EffectEnum.AddWisdom }, new EffectEnum[] { EffectEnum.SubWisdom }));
+            stats.Add(new GenericStat(StatEnum.Strength, new EffectEnum[] { EffectEnum.AddStrength }, new EffectEnum[] { EffectEnum.SubStrength }));
             stats.Add(new GenericStat(StatEnum.Intelligence, new EffectEnum[] { EffectEnum.AddIntelligence }, new EffectEnum[] { EffectEnum.SubIntelligence }));
-            stats.Add(new GenericStat(StatEnum.Chance, new EffectEnum[] { EffectEnum.AddLuck }, new EffectEnum[] { EffectEnum.SubLuck }));
-            stats.Add(new GenericStat(StatEnum.Agilite, new EffectEnum[] { EffectEnum.AddAgility }, new EffectEnum[] { EffectEnum.SubAgility }));
+            stats.Add(new GenericStat(StatEnum.Luck, new EffectEnum[] { EffectEnum.AddLuck }, new EffectEnum[] { EffectEnum.SubLuck }));
+            stats.Add(new GenericStat(StatEnum.Agility, new EffectEnum[] { EffectEnum.AddAgility }, new EffectEnum[] { EffectEnum.SubAgility }));
             stats.Add(new GenericStat(StatEnum.MaxAP, new EffectEnum[] { EffectEnum.AddAP, EffectEnum.AddAPBis }, new EffectEnum[] { EffectEnum.SubAP, EffectEnum.SubAPStrength }, 6, FormuleMaxPA));
             stats.Add(new GenericStat(StatEnum.MaxMP, new EffectEnum[] { EffectEnum.AddMP, EffectEnum.BonusMP }, new EffectEnum[] { EffectEnum.SubMP, EffectEnum.SubMPStrength }, 3));
             stats.Add(new GenericStat(StatEnum.RP, new EffectEnum[] { EffectEnum.AddRP }, new EffectEnum[] { EffectEnum.SubRP }));
@@ -43,39 +43,39 @@ namespace SunDofus.Game.Characters.Stats
             stats.Add(new GenericStat(StatEnum.ReflectDamage, new EffectEnum[] { EffectEnum.AddRenvoiDamage, EffectEnum.AddRenvoiDamageItem }, new EffectEnum[] { }));
             stats.Add(new GenericStat(StatEnum.DamageCritic, new EffectEnum[] { EffectEnum.AddDamageCritic }, new EffectEnum[] { EffectEnum.SubDamageCritic }));
             stats.Add(new GenericStat(StatEnum.EchecCritic, new EffectEnum[] { EffectEnum.AddEchecCritic }, new EffectEnum[] { }));
-            stats.Add(new GenericStat(StatEnum.EsquivePA, new EffectEnum[] { EffectEnum.AddStrengthMP }, new EffectEnum[] { EffectEnum.SubStrengthAP }, 0, FormuleEsquive));
-            stats.Add(new GenericStat(StatEnum.EsquivePM, new EffectEnum[] { EffectEnum.AddEsquivePM }, new EffectEnum[] { EffectEnum.SubStrengthMP }, 0, FormuleEsquive));
+            stats.Add(new GenericStat(StatEnum.StrengthAP, new EffectEnum[] { EffectEnum.AddStrengthMP }, new EffectEnum[] { EffectEnum.SubStrengthAP }, 0, FormuleEsquive));
+            stats.Add(new GenericStat(StatEnum.StrengthMP, new EffectEnum[] { EffectEnum.AddStrengthMP }, new EffectEnum[] { EffectEnum.SubStrengthMP }, 0, FormuleEsquive));
 
             stats.Add(new GenericStat(StatEnum.ReduceDamagePhysic, new EffectEnum[] { EffectEnum.AddReduceDamagePhysic }, new EffectEnum[] { EffectEnum.SubReduceDamagePhysic }));
             stats.Add(new GenericStat(StatEnum.ReduceDamageMagic, new EffectEnum[] { EffectEnum.AddReduceDamageMagic }, new EffectEnum[] { EffectEnum.SubReduceDamageMagic }));
 
-            stats.Add(new GenericStat(StatEnum.ReduceDamageNeutre, new EffectEnum[] { EffectEnum.AddReduceDamageNeutre }, new EffectEnum[] { EffectEnum.SubReduceDamageNeutre }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentNeutre, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentNeutral }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentNeutre }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamageTerre, new EffectEnum[] { EffectEnum.AddReduceDamageStrength }, new EffectEnum[] { EffectEnum.SubReduceDamageTerre }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentTerre, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentStrength }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentTerre }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamageFeu, new EffectEnum[] { EffectEnum.AddReduceDamageFeu }, new EffectEnum[] { EffectEnum.SubReduceDamageFeu }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentFeu, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentFire }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentFeu }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamageEau, new EffectEnum[] { EffectEnum.AddReduceDamageWater }, new EffectEnum[] { EffectEnum.SubReduceDamageEau }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentEau, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentWater }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentEau }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamageNeutral, new EffectEnum[] { EffectEnum.AddReduceDamageNeutral }, new EffectEnum[] { EffectEnum.SubReduceDamageNeutral }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentNeutral, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentNeutral }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentNeutral }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamageEarth, new EffectEnum[] { EffectEnum.AddReduceDamageStrength }, new EffectEnum[] { EffectEnum.SubReduceDamageStrength }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentEarth, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentStrength }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentStrength }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamageFire, new EffectEnum[] { EffectEnum.AddReduceDamageFire }, new EffectEnum[] { EffectEnum.SubReduceDamageFire }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentFire, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentFire }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentFire }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamageWater, new EffectEnum[] { EffectEnum.AddReduceDamageWater }, new EffectEnum[] { EffectEnum.SubReduceDamageWater }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentWater, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentWater }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentWater }));
             stats.Add(new GenericStat(StatEnum.ReduceDamageAir, new EffectEnum[] { EffectEnum.AddReduceDamageAir }, new EffectEnum[] { EffectEnum.SubReduceDamageAir }));
             stats.Add(new GenericStat(StatEnum.ReduceDamagePercentAir, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentAir }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentAir }));
 
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPNeutre, new EffectEnum[] { EffectEnum.AddReduceDamagePvPNeutre }, new EffectEnum[] { }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPNeutre, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPNeutral }, new EffectEnum[] { }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPTerre, new EffectEnum[] { EffectEnum.AddReduceDamagePvPTerre }, new EffectEnum[] { }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPTerre, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPStrength }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPTerre }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPFeu, new EffectEnum[] { EffectEnum.AddReduceDamagePvPFeu }, new EffectEnum[] { }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPFeu, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPFire }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPFeu }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPEau, new EffectEnum[] { EffectEnum.AddReduceDamagePvPWater }, new EffectEnum[] { }));
-            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPEau, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPWater }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPEau }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPNeutral, new EffectEnum[] { EffectEnum.AddReduceDamagePvPNeutral }, new EffectEnum[] { }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPNeutral, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPNeutral }, new EffectEnum[] { }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPEarth, new EffectEnum[] { EffectEnum.AddReduceDamagePvPStrength }, new EffectEnum[] { }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPEarth, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPStrength }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPStrength }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPFire, new EffectEnum[] { EffectEnum.AddReduceDamagePvPFire }, new EffectEnum[] { }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPFire, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPFire }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPFire }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePvPWater, new EffectEnum[] { EffectEnum.AddReduceDamagePvPWater }, new EffectEnum[] { }));
+            stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPWater, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPWater }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPWater }));
             stats.Add(new GenericStat(StatEnum.ReduceDamagePvPAir, new EffectEnum[] { EffectEnum.AddReduceDamagePvPAir }, new EffectEnum[] { }));
             stats.Add(new GenericStat(StatEnum.ReduceDamagePercentPvPAir, new EffectEnum[] { EffectEnum.AddReduceDamagePourcentPvPAir }, new EffectEnum[] { EffectEnum.SubReduceDamagePourcentPvPAir }));
 
             stats.Add(new GenericStat(StatEnum.Armor, new EffectEnum[] { EffectEnum.AddArmor, EffectEnum.AddArmorBis }, new EffectEnum[] { EffectEnum.SubArmor }));
-            stats.Add(new GenericStat(StatEnum.ArmorNeutre, new EffectEnum[] { EffectEnum.AddArmorNeutre }, new EffectEnum[] { EffectEnum.SubArmorNeutre }));
-            stats.Add(new GenericStat(StatEnum.ArmorTerre, new EffectEnum[] { EffectEnum.AddArmorTerre }, new EffectEnum[] { EffectEnum.SubArmorTerre }));
-            stats.Add(new GenericStat(StatEnum.ArmorFeu, new EffectEnum[] { EffectEnum.AddArmorFeu }, new EffectEnum[] { EffectEnum.SubArmorFeu }));
-            stats.Add(new GenericStat(StatEnum.ArmorEau, new EffectEnum[] { EffectEnum.AddArmorEau }, new EffectEnum[] { EffectEnum.SubArmorEau }));
+            stats.Add(new GenericStat(StatEnum.ArmorNeutral, new EffectEnum[] { EffectEnum.AddArmorNeutral }, new EffectEnum[] { EffectEnum.SubArmorNeutral }));
+            stats.Add(new GenericStat(StatEnum.ArmorEarth, new EffectEnum[] { EffectEnum.AddArmorStrength }, new EffectEnum[] { EffectEnum.SubArmorStrength }));
+            stats.Add(new GenericStat(StatEnum.ArmorFire, new EffectEnum[] { EffectEnum.AddArmorFire }, new EffectEnum[] { EffectEnum.SubArmorFire }));
+            stats.Add(new GenericStat(StatEnum.ArmorWater, new EffectEnum[] { EffectEnum.AddArmorWater }, new EffectEnum[] { EffectEnum.SubArmorWater }));
             stats.Add(new GenericStat(StatEnum.ArmorAir, new EffectEnum[] { EffectEnum.AddArmorAir }, new EffectEnum[] { EffectEnum.SubArmorAir }));
         }
 
@@ -86,22 +86,22 @@ namespace SunDofus.Game.Characters.Stats
 
         public int FormuleInitiative(int baseValue, int equippedValue, int givenValue, int bonusValue)
         {
-            return (GetStat(StatEnum.Force).Total + GetStat(StatEnum.Intelligence).Total + GetStat(StatEnum.Chance).Total + GetStat(StatEnum.Agilite).Total + (baseValue + equippedValue + givenValue + bonusValue)) * (character.Life / GetStat(StatEnum.MaxLife).Total);
+            return (GetStat(StatEnum.Strength).Total + GetStat(StatEnum.Intelligence).Total + GetStat(StatEnum.Luck).Total + GetStat(StatEnum.Agility).Total + (baseValue + equippedValue + givenValue + bonusValue)) * (character.Life / GetStat(StatEnum.MaxLife).Total);
         }
 
         public int FormuleProspection(int baseValue, int equippedValue, int givenValue, int bonusValue)
         {
-            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Chance).Total / 10 + (character.Class == 3 ? 20 : 0);
+            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Luck).Total / 10 + (character.Class == 3 ? 20 : 0);
         }
 
         public int FormuleMaxLife(int baseValue, int equippedValue, int givenValue, int bonusValue)
         {
-            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Vitalite).Total + character.Level * 5;
+            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Vitality).Total + character.Level * 5;
         }
 
         public int FormuleMaxPods(int baseValue, int equippedValue, int givenValue, int bonusValue)
         {
-            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Force).Total * 5;
+            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Strength).Total * 5;
         }
 
         public int FormuleMaxPA(int baseValue, int equippedValue, int givenValue, int bonusValue)
@@ -111,7 +111,7 @@ namespace SunDofus.Game.Characters.Stats
 
         public int FormuleEsquive(int baseValue, int equippedValue, int givenValue, int bonusValue)
         {
-            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Sagesse).Total / 4;
+            return (baseValue + equippedValue + givenValue + bonusValue) + GetStat(StatEnum.Wisdom).Total / 4;
         }
 
         public GenericStat GetStat(StatEnum stat)

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SunDofus.Game.Maps.Fights;
+using SunDofus.Game.Maps.Monsters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,7 +43,17 @@ namespace SunDofus.DataRecords
 
         public DB_Map()
         {
+            RushablesCells = UncompressDatas();
+
+            Characters = new List<DB_Character>();
+            Triggers = new List<DB_Trigger>();
+            Npcs = new List<DB_NPC>();
             Monsters = new Dictionary<int, List<int>>();
+            MonstersGroups = new List<MonstersGroup>();
+            Fights = new List<Fight>();
+
+            if (Monsters.Count != 0 && RushablesCells.Count != 0)
+                RefreshAllMonsters();
         }
 
         public void ParsePos()
@@ -63,41 +75,23 @@ namespace SunDofus.DataRecords
         public List<DB_Trigger> Triggers { get; set; }
         public List<DB_NPC> Npcs { get; set; }
         public List<MonstersGroup> MonstersGroups { get; set; }
-        public List<Fights.Fight> Fights { get; set; }
+        public List<Fight> Fights { get; set; }
         public List<int> RushablesCells { get; set; }
-        public Guilds.GuildCollector Collector { get; set; }
-
-        public Entities.Models.Maps.MapModel Model { get; set; }
-
-        public Map(Entities.Models.Maps.MapModel map)
-        {
-            Model = map;
-
-            RushablesCells = UncompressDatas();
-
-            Characters = new List<DB_Character>();
-            Triggers = new List<Entities.Models.Maps.TriggerModel>();
-            Npcs = new List<Characters.NPC.NPCMap>();
-            MonstersGroups = new List<Monsters.MonstersGroup>();
-            Fights = new List<Fights.Fight>();
-
-            if (Model.Monsters.Count != 0 && RushablesCells.Count != 0)
-                RefreshAllMonsters();
-        }
+        public DB_GuildCollector Collector { get; set; }
 
         private void RefreshAllMonsters()
         {
-            for (int i = 1; i <= Model.MaxMonstersGroup; i++)
+            for (int i = 1; i <= MaxMonstersGroup; i++)
                 AddMonstersGroup();
         }
 
         public void AddMonstersGroup()
         {
-            if (MonstersGroups.Count >= Model.MaxMonstersGroup)
+            if (MonstersGroups.Count >= MaxMonstersGroup)
                 return;
 
             lock(MonstersGroups)
-                MonstersGroups.Add(new Monsters.MonstersGroup(Model.Monsters, this));
+                MonstersGroups.Add(new MonstersGroup(Monsters, this));
         }
 
         public string FormatFightCount()
@@ -123,58 +117,58 @@ namespace SunDofus.DataRecords
         {
             Send(string.Concat("GM|+", character.PatternDisplayChar()));
 
-            character.NClient.Send(string.Concat("fC", Fights.Count)); //Fight
+            character.Send(string.Concat("fC", Fights.Count)); //Fight
 
             lock (Characters)
                 Characters.Add(character);
 
             if (Characters.Count > 0)
-                character.NClient.Send(string.Concat("GM", CharactersPattern()));
+                character.Send(string.Concat("GM", CharactersPattern()));
 
             if (Npcs.Count > 0)
-                character.NClient.Send(string.Concat("GM", NPCsPattern()));
+                character.Send(string.Concat("GM", NPCsPattern()));
 
             if (MonstersGroups.Count > 0)
-                character.NClient.Send(string.Concat("GM", MonstersGroupsPattern()));
+                character.Send(string.Concat("GM", MonstersGroupsPattern()));
 
             if (Collector != null && !Collector.IsInFight)
-                character.NClient.Send(string.Concat("GM", Collector.PatternMap()));
+                character.Send(string.Concat("GM", Collector.PatternMap()));
 
             if (Fights.Count > 0)
             {
-                character.NClient.Send(FormatFightCount());
+                character.Send(FormatFightCount());
 
                 foreach (Fight fight in Fights)
                 {
                     if (fight.State == FightState.STARTING)
                     {
-                        character.NClient.Send(fight.FormatFlagShow());
-                        character.NClient.Send(fight.FormatFlagFighter(fight.Team1.GetFighters()));
-                        character.NClient.Send(fight.FormatFlagFighter(fight.Team2.GetFighters()));
+                        character.Send(fight.FormatFlagShow());
+                        character.Send(fight.FormatFlagFighter(fight.Team1.GetFighters()));
+                        character.Send(fight.FormatFlagFighter(fight.Team2.GetFighters()));
 
                         if (fight.Team1.IsToggle(ToggleType.LOCK))
-                            character.NClient.Send(string.Concat("Go+A", fight.Team1.ID));
+                            character.Send(string.Concat("Go+A", fight.Team1.ID));
                         if (fight.Team1.IsToggle(ToggleType.HELP))
-                            character.NClient.Send(string.Concat("Go+H", fight.Team1.ID));
+                            character.Send(string.Concat("Go+H", fight.Team1.ID));
                         if (fight.Team1.IsToggle(ToggleType.PARTY))
-                            character.NClient.Send(string.Concat("Go+P", fight.Team1.ID));
+                            character.Send(string.Concat("Go+P", fight.Team1.ID));
                         if (fight.Team1.IsToggle(ToggleType.SPECTATOR))
-                            character.NClient.Send(string.Concat("Go+S", fight.Team1.ID));
+                            character.Send(string.Concat("Go+S", fight.Team1.ID));
 
                         if (fight.Team2.IsToggle(ToggleType.LOCK))
-                            character.NClient.Send(string.Concat("Go+A", fight.Team2.ID));
+                            character.Send(string.Concat("Go+A", fight.Team2.ID));
                         if (fight.Team2.IsToggle(ToggleType.HELP))
-                            character.NClient.Send(string.Concat("Go+H", fight.Team2.ID));
+                            character.Send(string.Concat("Go+H", fight.Team2.ID));
                         if (fight.Team2.IsToggle(ToggleType.PARTY))
-                            character.NClient.Send(string.Concat("Go+P", fight.Team2.ID));
+                            character.Send(string.Concat("Go+P", fight.Team2.ID));
                         if (fight.Team2.IsToggle(ToggleType.SPECTATOR))
-                            character.NClient.Send(string.Concat("Go+S", fight.Team2.ID));
+                            character.Send(string.Concat("Go+S", fight.Team2.ID));
                     }
                 }
             }
         }
 
-        public void AddFight(Fights.Fight fight)
+        public void AddFight(Fight fight)
         {
             lock (Fights)
                 Fights.Add(fight);
@@ -235,7 +229,7 @@ namespace SunDofus.DataRecords
         {
             List<int> newList = new List<int>();
 
-            string data = DecypherData(Model.MapData, "");
+            string data = DecypherData(MapData, "");
 
             for (int i = 0; i < data.Length; i += 10)
             {
@@ -288,7 +282,7 @@ namespace SunDofus.DataRecords
         {
             string keyResult = "";
 
-            for (int i = 0; i < Key.Length; i += 2)
+            for (var i = 0; i < Key.Length; i += 2)
                 keyResult += Convert.ToChar(int.Parse(Key.Substring(i, 2), System.Globalization.NumberStyles.HexNumber));
 
             return Uri.UnescapeDataString(keyResult);
@@ -321,67 +315,65 @@ namespace SunDofus.DataRecords
 
         public void SendZaaps(DB_Character character)
         {
-            if (Entities.Requests.ZaapsRequests.ZaapsList.Any(x => x.MapID == character.MapID))
+            if (Servers.Zaaps.Any(x => x.MapID == character.MapID))
             {
-                var zaap = Entities.Requests.ZaapsRequests.ZaapsList.First(x => x.MapID == character.MapID);
+                var zaap = Servers.Zaaps.First(x => x.MapID == character.MapID);
 
-                if (!character.Zaaps.Contains(zaap.MapID))
+                if (!character.Zaaps.Contains(zaap))
                 {
-                    character.Zaaps.Add(zaap.MapID);
-                    character.NClient.Send("Im024");
+                    character.Zaaps.Add(zaap);
+                    character.Send("Im024");
                 }
 
-                var savepos = (Entities.Requests.ZaapsRequests.ZaapsList.Any(x => x.MapID == character.SaveMap) ?
-                    Entities.Requests.ZaapsRequests.ZaapsList.First(x => x.MapID == character.SaveMap).MapID.ToString() : "");
+                var savepos = (Servers.Zaaps.Any(x => x.MapID == character.SaveMap) ? Servers.Zaaps.First(x => x.MapID == character.SaveMap).MapID.ToString() : "");
                 var packet = string.Format("WC{0}|", savepos);
 
-                Entities.Requests.ZaapsRequests.ZaapsList.Where(x => character.Zaaps.Contains(x.MapID)).ToList().
-                    ForEach(x => packet = string.Format("{0}{1};{2}|", packet, x.MapID, CalcPrice(character.GetMap(), x.Map)));
+                Servers.Zaaps.Where(x => character.Zaaps.Contains(x)).ToList().ForEach(x => packet = string.Format("{0}{1};{2}|", packet, x.MapID, CalcZaapPrice(character.Map, x.Map)));
 
-                character.NClient.Send(packet.Substring(0, packet.Length - 1));
+                character.Send(packet.Substring(0, packet.Length - 1));
             }
             else
-                character.NClient.Send("BN");
+                character.Send("BN");
         }
 
         public void SaveZaap(DB_Character character)
         {
-            if (Entities.Requests.ZaapsRequests.ZaapsList.Any(x => x.MapID == character.MapID))
+            if (Servers.Zaaps.Any(x => x.MapID == character.MapID))
             {
-                var zaap = Entities.Requests.ZaapsRequests.ZaapsList.First(x => x.MapID == character.MapID);
+                var zaap = Servers.Zaaps.First(x => x.MapID == character.MapID);
 
                 character.SaveMap = zaap.MapID;
                 character.SaveCell = zaap.CellID;
 
-                character.NClient.Send("Im06");
+                character.Send("Im06");
             }
             else
-                character.NClient.Send("BN");
+                character.Send("BN");
         }
 
         public void OnMoveZaap(DB_Character character, int nextZaap)
         {
-            if (Entities.Requests.ZaapsRequests.ZaapsList.Any(x => x.MapID == nextZaap))
+            if (Servers.Zaaps.Any(x => x.MapID == nextZaap))
             {
-                var zaap = Entities.Requests.ZaapsRequests.ZaapsList.First(x => x.MapID == nextZaap);
+                var zaap = Servers.Zaaps.First(x => x.MapID == nextZaap);
 
-                var price = CalcPrice(character.GetMap(), zaap.Map);
+                var price = CalcZaapPrice(character.GetMap(), zaap.Map);
 
                 character.Kamas -= price;
-                character.NClient.Send(string.Concat("Im046;", price));
+                character.Send(string.Concat("Im046;", price));
                 character.TeleportNewMap(zaap.MapID, zaap.CellID);
 
-                character.NClient.Send("WV");
+                character.Send("WV");
 
-                character.SendChararacterStats();
+                character.Send(character.ToString());
             }
             else
-                character.NClient.Send("BN");
+                character.Send("BN");
         }
 
-        private int CalcPrice(Map startMap, Map nextMap)
+        private int CalcZaapPrice(DB_Map startMap, DB_Map nextMap)
         {
-            return (int)(10 * (Math.Abs(nextMap.Model.PosX - startMap.Model.PosX) + Math.Abs(nextMap.Model.PosY - startMap.Model.PosY)));
+            return (int)(10 * (Math.Abs(nextMap.PosX - startMap.PosX) + Math.Abs(nextMap.PosY - startMap.PosY)));
         }
 
         #endregion
@@ -390,50 +382,49 @@ namespace SunDofus.DataRecords
 
         public void SendZaapis(DB_Character character)
         {
-            if (Entities.Requests.ZaapisRequests.ZaapisList.Any(x => x.MapID == character.MapID))
+            if (Servers.Zaapis.Any(x => x.MapID == character.MapID))
             {
-                var zaapis = Entities.Requests.ZaapisRequests.ZaapisList.First(x => x.MapID == character.MapID);
+                var zaapis = Servers.Zaapis.First(x => x.MapID == character.MapID);
                 var packet = string.Format("Wc{0}|", character.MapID);
 
-                if ((zaapis.Faction == 1 && character.Faction.ID == 2) || (zaapis.Faction == 2 && character.Faction.ID == 1))
+                if ((zaapis.Faction == 1 && character.Faction.FactionID == 2) || (zaapis.Faction == 2 && character.Faction.FactionID == 1))
                 {
-                    character.NClient.Send("Im1196");
+                    character.Send("Im1196");
                     return;
                 }
 
-                Entities.Requests.ZaapisRequests.ZaapisList.Where(x => x.Faction == zaapis.Faction).ToList().
-                    ForEach(x => packet = string.Concat(packet, x.MapID, (character.Faction.ID == x.Faction ? ";10|" : ";20|")));
+                Servers.Zaapis.Where(x => x.Faction == zaapis.Faction).ToList().ForEach(x => packet = string.Concat(packet, x.MapID, (character.Faction.FactionID == x.Faction ? ";10|" : ";20|")));
 
-                character.NClient.Send(packet);
+                character.Send(packet);
             }
             else
-                character.NClient.Send("BN");
+                character.Send("BN");
         }
 
         public void OnMoveZaapis(DB_Character character, int nextZaapis)
         {
-            if (Entities.Requests.ZaapisRequests.ZaapisList.Any(x => x.MapID == nextZaapis))
+            if (Servers.Zaapis.Any(x => x.MapID == nextZaapis))
             {
-                var zaapis = Entities.Requests.ZaapisRequests.ZaapisList.First(x => x.MapID == nextZaapis);
+                var zaapis = Servers.Zaapis.First(x => x.MapID == nextZaapis);
 
-                if ((zaapis.Faction == 1 && character.Faction.ID == 2) || (zaapis.Faction == 2 && character.Faction.ID == 1))
+                if ((zaapis.Faction == 1 && character.Faction.FactionID == 2) || (zaapis.Faction == 2 && character.Faction.FactionID == 1))
                 {
-                    character.NClient.Send("Im1196");
+                    character.Send("Im1196");
                     return;
                 }
 
-                var price = (character.Faction.ID == zaapis.Faction ? 10 : 20);
+                var price = (character.Faction.FactionID == zaapis.Faction ? 10 : 20);
 
                 character.Kamas -= price;
-                character.NClient.Send(string.Concat("Im046;", price));
+                character.Send(string.Concat("Im046;", price));
                 character.TeleportNewMap(zaapis.MapID, zaapis.CellID);
 
-                character.NClient.Send("Wv");
+                character.Send("Wv");
 
-                character.SendChararacterStats();
+                character.Send(character.ToString());
             }
             else
-                character.NClient.Send("BN");
+                character.Send("BN");
         }
 
         #endregion
